@@ -13,14 +13,14 @@ ts = load.timescale()
 
 def get_ayanamsha(jd):
     """
-    Calculates Lahiri Ayanamsha for a given Julian Date.
-    Simple linear approximation: 
-    23.85 degrees at J2000.0 + 50.27 seconds per year.
-    Reference: J2000.0 corresponds to JD 2451545.0
+    Calculates precise Lahiri (Chitra Paksha) Ayanamsha.
+    Uses the standard polynomial for the mean ayanamsha.
     """
-    t = (jd - 2451545.0) / 36525.0 # Centuries from J2000.0
-    # Lahiri Ayanamsha formula (approximate)
-    ayanamsha = 23.8580833 + (50.2785 * t / 36) # 50.2785 per year
+    t = (jd - 2451545.0) / 36525.0
+    # Precise formula for mean Lahiri ayanamsha
+    # A = 23.85 + 50.27" * t ...
+    # Standard formula for J2000: 23.8580833 + 1.39733*T + 0.000308*T^2
+    ayanamsha = 23.8580833 + (1.3973333 * t) + (0.0003088 * t * t)
     return ayanamsha
 
 def get_sidereal_longitude(target_time_utc, body):
@@ -36,6 +36,24 @@ def get_sidereal_longitude(target_time_utc, body):
     
     sidereal_lon = (tropical_lon - ayanamsha) % 360
     return sidereal_lon
+
+def get_previous_new_moon(target_time_utc):
+    """
+    Finds the most recent New Moon (Amavasya) preceding the target time.
+    """
+    t_end = ts.from_datetime(target_time_utc)
+    t_start = ts.from_datetime(target_time_utc - timedelta(days=32))
+    
+    times, phases = almanac.find_discrete(t_start, t_end, almanac.moon_phases(eph))
+    
+    # Phases: 0=New Moon, 1=First Quarter, 2=Full Moon, 3=Last Quarter
+    new_moons = [t for t, p in zip(times, phases) if p == 0]
+    
+    if not new_moons:
+        # Should not happen with 32 days window
+        return target_time_utc
+    
+    return new_moons[-1].astimezone(pytz.utc)
 
 def get_sunrise_sunset(date_local, lat, lon, timezone_str):
     """

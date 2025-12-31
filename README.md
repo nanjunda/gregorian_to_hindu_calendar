@@ -1,8 +1,12 @@
-# Hindu Panchanga Converter v1.0
+# Hindu Panchanga Converter v2.0
 
 A high-precision tool to convert Gregorian calendar dates, times, and locations into traditional Hindu Panchanga elements (Tithi, Nakshatra, Yoga, Karana, Vara, Masa, and Samvatsara).
 
 ## Features
+- **Version 2.0 (New):**
+    - **Vedic Recurrence:** Generate calendar events that recur based on Masa, Paksha, and Tithi.
+    - **iCal Export:** Download a 10-year `.ics` file for easy import into digital calendars.
+    - **Detailed Reports:** Every calendar event includes a full ASCI Panchanga report in the description.
 - **Web UI:** Modern, responsive interface with glassmorphism design.
 - **CLI Utility:** Command-line tool for quick conversions.
 - **High Precision:** Uses `skyfield` for astronomical data and Lahiri Ayanamsha.
@@ -13,7 +17,7 @@ A high-precision tool to convert Gregorian calendar dates, times, and locations 
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd julian_to_hindu_calendar
+   cd gregorian_to_hindu_calendar
    ```
 
 2. **Setup virtual environment:**

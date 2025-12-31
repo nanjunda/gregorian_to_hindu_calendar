@@ -10,8 +10,8 @@ To extend the existing **v1.0** implementation to support the generation of recu
 
 ## Key Features
 *   **Title Input:** Users can provide a descriptive title (e.g., "Parent's Anniversary").
-*   **Vedic Recurrence Logic:** Calculates the Gregorian date for the next ~10 years that matches the target **Masa**, **Paksha**, and **Tithi**.
-* 3.  **iCal (.ics) Generation:** A downloadable file containing these calculated dates. Each event will include the full "Hindu Panchanga Report" in its description field for that specific occurrence.
+*   **Vedic Recurrence Logic:** Calculates the Gregorian date for the **next 20 years starting from the current year** (e.g., 2025 to 2045) that matches the target **Masa**, **Paksha**, and **Tithi** derived from the original input date.
+*   **iCal (.ics) Generation:** A downloadable file containing these 20 calculated dates. Each event will include the full "Hindu Panchanga Report" in its description field for that specific occurrence.
 4.  **Web UI Enhancement:** The interface will include a "Title" field and a "Download iCal" button. with glassmorphism styling.
 
 ## Recurrence Strategy

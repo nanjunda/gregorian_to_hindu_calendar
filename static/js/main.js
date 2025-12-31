@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('iCal error:', error);
             alert('Failed to generate iCal file.');
         } finally {
-            downloadBtn.textContent = 'Download 10-Year iCal (.ics)';
+            downloadBtn.textContent = 'Download 20-Year iCal (.ics)';
             downloadBtn.disabled = false;
         }
     });

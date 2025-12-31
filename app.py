@@ -2,11 +2,12 @@ from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 import pytz
 from utils.location import get_location_details
-from utils.astronomy import get_sidereal_longitude, get_sunrise_sunset, sun, moon
 from panchanga.calculations import (
     calculate_vara, calculate_tithi, calculate_nakshatra, 
-    calculate_yoga, calculate_karana, calculate_masa_samvatsara
+    calculate_yoga, calculate_karana, calculate_masa_samvatsara,
+    format_panchanga_report
 )
+from utils.astronomy import get_sidereal_longitude, get_sunrise_sunset, sun, moon, get_previous_new_moon
 import os
 
 app = Flask(__name__)
@@ -40,8 +41,8 @@ def generate_ical():
         local_tz = pytz.timezone(loc["timezone"])
         local_dt = local_tz.localize(naive_dt)
 
-        # 3. Find Recurrences (10 years)
-        occurrences = find_recurrences(local_dt, loc, num_years=10)
+        # 3. Find Recurrences (20 years starting from current year)
+        occurrences = find_recurrences(local_dt, loc, num_years=20)
         
         # 4. Generate iCal content
         ical_data = create_ical_content(title, occurrences)
@@ -82,13 +83,17 @@ def get_panchanga():
         moon_lon = get_sidereal_longitude(utc_dt, moon)
         sunrise, sunset = get_sunrise_sunset(local_dt, loc["latitude"], loc["longitude"], loc["timezone"])
         
+        # New Moon for Masa
+        prev_nm_utc = get_previous_new_moon(utc_dt)
+        sun_lon_at_nm = get_sidereal_longitude(prev_nm_utc, sun)
+        
         # 4. Calculate Panchanga Elements
         vara = calculate_vara(local_dt, sunrise)
         tithi, paksha = calculate_tithi(sun_lon, moon_lon)
         nakshatra = calculate_nakshatra(moon_lon)
         yoga = calculate_yoga(sun_lon, moon_lon)
         karana_num = calculate_karana(sun_lon, moon_lon)
-        masa, samvatsara = calculate_masa_samvatsara(local_dt.year, sun_lon)
+        masa, samvatsara = calculate_masa_samvatsara(local_dt.year, sun_lon_at_nm, sun_lon)
 
         report = format_panchanga_report(
             local_dt, loc["address"], loc["timezone"],

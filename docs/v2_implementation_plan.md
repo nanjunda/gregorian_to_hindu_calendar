@@ -6,11 +6,12 @@ Enhance the existing v1.0 application to support title-based iCal generation wit
 ## Proposed Changes
 
 ### 1. Recurrence Logic
-*   **[NEW] `panchanga/recurrence.py`**:
-    *   Implement `find_next_occurrences(base_dt, location_name, num_years=10)`:
-        *   Identify target Masa, Paksha, and Tithi.
-        *   Iterate through future years.
-        *   Search +/- 30 days window around expected date.
+*   **[MODIFY] `panchanga/recurrence.py`**:
+    *   Update `find_recurrences(base_dt, loc_details, num_years=20)`:
+        *   Extract target attributes (Masa, Paksha, Tithi) from `base_dt`.
+        *   Determine the **current year** using `datetime.now().year`.
+        *   Iterate for 20 years starting from the **current year**.
+        *   Search +/- 30 days window around the anniversary date in each future year.
         *   Collect matching dates and their full Panchanga reports.
 
 ### 2. iCal Generation

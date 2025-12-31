@@ -7,7 +7,7 @@ graph TD
     User["User Input: Title, Date, Time, Location"] --> InputParser["Input Parser (v1.0 Logic)"]
     InputParser --> TargetAttrs["Extract Target: Masa, Paksha, Tithi"]
     
-    TargetAttrs --> SearchLoop["Start Recurrence Loop (Next 10 Years)"]
+    TargetAttrs --> SearchLoop["Start Recurrence Loop (Current Year to +20 Years)"]
     
     subgraph "Per-Year Search Engine"
         SearchLoop --> InitGuess["Initialize Guess: Current Year + Day Offset"]
@@ -28,8 +28,8 @@ graph TD
 ## Component Additions
 
 ### 1. Recurrence Engine (`panchanga/recurrence.py`)
-*   **Function:** `find_next_occurrence(current_date, target_masa, target_paksha, target_tithi)`
-*   **Logic:** Uses a window-based scan to handle the lunar-solar drift (Tithi is approximately 11 days earlier each solar year).
+*   **Function:** `find_recurrences(base_dt, loc_details, num_years=20)`
+*   **Logic:** Starts the search loop from the **current year** (determined by `datetime.now().year`), ensuring that even for historical input dates, the calendar events generated are relevant for current and future use.
 
 ### 2. iCal Formatter (`utils/ical_gen.py`)
 *   **Function:** `generate_ics(title, events_data)`

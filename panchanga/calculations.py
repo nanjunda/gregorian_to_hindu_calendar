@@ -58,13 +58,15 @@ def calculate_karana(sun_lon, moon_lon):
     # There are fixed and mobile karanas. For simplicity, we just return the count or name if we had a full list.
     return karana_index + 1
 
-def calculate_masa_samvatsara(year, sun_lon):
-    # Rough approximation for Masa based on Sun's Rasi
-    rasi_index = int(sun_lon / 30)
-    # Sun in Dhanu (index 8) -> Pausha Masa (Pausha month Sun is in Dhanu usually)
-    # Sun in Makara (index 9) -> Magha
-    # Sun in Meena (index 11) -> Chaitra
-    
+def calculate_masa_name(sun_lon_at_nm):
+    """
+    Determines the Lunar Month (Masa) name based on the Sun's Rasi at New Moon.
+    Using Amanta system (South India/Kannada/Telugu).
+    """
+    rasi_index = int(sun_lon_at_nm / 30)
+    # Mapping for Amanta system:
+    # NM Sun in Meena -> Chaitra
+    # NM Sun in Mesha -> Vaishakha
     masa_mapping = {
         11: 0, # Meena -> Chaitra
         0: 1,  # Mesha -> Vaishakha
@@ -79,8 +81,13 @@ def calculate_masa_samvatsara(year, sun_lon):
         9: 10, # Makara -> Magha
         10: 11 # Kumbha -> Phalguna
     }
-    
-    masa_name = MASAS[masa_mapping[rasi_index]]
+    return MASAS[masa_mapping[rasi_index]]
+
+def calculate_masa_samvatsara(year, sun_lon_at_nm, sun_lon_now):
+    """
+    Calculates Masa and Samvatsara.
+    """
+    masa_name = calculate_masa_name(sun_lon_at_nm)
     
     # Samvatsara: Based on the 60-year cycle starting at 1987 (Prabhava)
     samvat_index = (year - 1987) % 60
