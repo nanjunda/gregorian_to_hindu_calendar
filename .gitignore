@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.bsp
+de421.bsp
+*.md
+!docs/*.md
+!README.md

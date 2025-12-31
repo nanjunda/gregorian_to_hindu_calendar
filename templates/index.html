@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hindu Panchanga Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hindu Panchanga</h1>
+            <p>Precise Vedic Calendar Insights</p>
+        </header>
+
+        <main>
+            <section class="card glass">
+                <form id="panchanga-form">
+                    <div class="input-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="time">Time (24h)</label>
+                        <input type="time" id="time" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" placeholder="City, Country" required>
+                        <button type="button" id="geo-btn" title="Use current location">📍</button>
+                    </div>
+                    <button type="submit" id="submit-btn">Convert to Panchanga</button>
+                </form>
+            </section>
+
+            <section id="result-container" class="card glass hidden">
+                <div class="result-header">
+                    <h2 id="res-samvatsara">Samvatsara</h2>
+                    <p id="res-location">Location Detail</p>
+                </div>
+                
+                <div class="grid">
+                    <div class="grid-item">
+                        <span class="label">Masa</span>
+                        <span class="value" id="res-masa">-</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label">Paksha</span>
+                        <span class="value" id="res-paksha">-</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label">Tithi</span>
+                        <span class="value" id="res-tithi">-</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label">Vara</span>
+                        <span class="value" id="res-vara">-</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label">Nakshatra</span>
+                        <span class="value" id="res-nakshatra">-</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label">Yoga</span>
+                        <span class="value" id="res-yoga">-</span>
+                    </div>
+                </div>
+
+                <div class="extra-details">
+                    <p>Sunrise: <span id="res-sunrise">-</span> | Sunset: <span id="res-sunset">-</span></p>
+                </div>
+            </section>
+
+            <div id="loader" class="hidden">
+                <div class="spinner"></div>
+                <p>Consulting the Stars...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Hindu Panchanga Engine</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
