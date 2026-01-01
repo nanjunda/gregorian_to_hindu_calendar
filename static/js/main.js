@@ -12,6 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     document.getElementById('time').value = `${hours}:${minutes}`;
 
+    let selectedLang = 'EN';
+
+    // Language Selector
+    const langBtns = document.querySelectorAll('.lang-btn');
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            langBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedLang = btn.getAttribute('data-lang');
+        });
+    });
+
     // Geolocation Support
     geoBtn.addEventListener('click', () => {
         if (!navigator.geolocation) {
@@ -44,7 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
             title: document.getElementById('title').value,
             date: document.getElementById('date').value,
             time: document.getElementById('time').value,
-            location: locationInput.value
+            location: locationInput.value,
+            lang: selectedLang
         };
 
         // Show loader, hide results
@@ -81,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
             title: document.getElementById('title').value,
             date: document.getElementById('date').value,
             time: document.getElementById('time').value,
-            location: locationInput.value
+            location: locationInput.value,
+            lang: selectedLang
         };
 
         downloadBtn.textContent = 'Generating...';

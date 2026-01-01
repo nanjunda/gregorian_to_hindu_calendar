@@ -1,32 +1,10 @@
 from data.panchanga_data import *
 import math
 
-def calculate_vara(local_time, sunrise_time):
+def calculate_vara(local_time, sunrise_time, lang='EN'):
     """
     Vara (Weekday) starts at Sunrise.
     """
-    # weekday() returns 0 for Monday, 6 for Sunday.
-    # Our VARAS list starts with Ravivara (Sunday) = 0? 
-    # Let's adjust: Monday=1, ..., Sunday=0 or Saturday=6.
-    # Standard Python: Monday=0, Tuesday=1, ..., Sunday=6.
-    # Our VARAS: Ravivara(0), Somavara(1), ..., Shanivara(6)
-    
-    # Check if time is before sunrise
-    if local_time < sunrise_time:
-        # It's traditionally the previous day
-        day_index = (local_time.weekday() - 0) % 7 # weekday() Monday is 0
-    else:
-        day_index = (local_time.weekday() + 1) % 7
-        
-    # Map Python's Monday=0 to our Somavara=1
-    # Python: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
-    # VARAS: Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
-    
-    # Adjustment:
-    # Python Mon(0) -> index 1
-    # Python Sun(6) -> index 0
-    # Python Sat(5) -> index 6
-    
     mapping = {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 0}
     
     if local_time < sunrise_time:
@@ -34,39 +12,36 @@ def calculate_vara(local_time, sunrise_time):
     else:
         weekday = local_time.weekday()
         
-    return VARAS[mapping[weekday]]
+    return VARAS[lang][mapping[weekday]]
 
-def calculate_tithi(sun_lon, moon_lon):
+def calculate_tithi(sun_lon, moon_lon, lang='EN'):
     diff = (moon_lon - sun_lon) % 360
     tithi_index = int(diff / 12)
-    paksha = "Shukla" if tithi_index < 15 else "Krishna"
-    return TITHIS[tithi_index], paksha
+    paksha = PAKSHAS[lang][0] if tithi_index < 15 else PAKSHAS[lang][1]
+    return TITHIS[lang][tithi_index], paksha
 
-def calculate_nakshatra(moon_lon):
+def calculate_nakshatra(moon_lon, lang='EN'):
+    """
+    Calculates Nakshatra and Pada.
+    """
     nakshatra_index = int(moon_lon / (360/27))
-    return NAKSHATRAS[nakshatra_index]
+    # Each nakshatra is 13°20' (13.333... degrees)
+    # Each pada is 3°20' (3.333... degrees)
+    pada = int((moon_lon % (360/27)) / (360/108)) + 1
+    return NAKSHATRAS[lang][nakshatra_index], pada
 
-def calculate_yoga(sun_lon, moon_lon):
+def calculate_yoga(sun_lon, moon_lon, lang='EN'):
     yoga_lon = (sun_lon + moon_lon) % 360
     yoga_index = int(yoga_lon / (360/27))
-    return YOGAS[yoga_index]
+    return YOGAS[lang][yoga_index]
 
 def calculate_karana(sun_lon, moon_lon):
     diff = (moon_lon - sun_lon) % 360
     karana_index = int(diff / 6)
-    # Karana 1 is Kimstughna (only for 1st half of 1st tithi)
-    # There are fixed and mobile karanas. For simplicity, we just return the count or name if we had a full list.
     return karana_index + 1
 
-def calculate_masa_name(sun_lon_at_nm):
-    """
-    Determines the Lunar Month (Masa) name based on the Sun's Rasi at New Moon.
-    Using Amanta system (South India/Kannada/Telugu).
-    """
+def calculate_masa_name(sun_lon_at_nm, lang='EN'):
     rasi_index = int(sun_lon_at_nm / 30)
-    # Mapping for Amanta system:
-    # NM Sun in Meena -> Chaitra
-    # NM Sun in Mesha -> Vaishakha
     masa_mapping = {
         11: 0, # Meena -> Chaitra
         0: 1,  # Mesha -> Vaishakha
@@ -81,35 +56,32 @@ def calculate_masa_name(sun_lon_at_nm):
         9: 10, # Makara -> Magha
         10: 11 # Kumbha -> Phalguna
     }
-    return MASAS[masa_mapping[rasi_index]]
+    return MASAS[lang][masa_mapping[rasi_index]]
 
-def calculate_masa_samvatsara(year, sun_lon_at_nm, sun_lon_now):
-    """
-    Calculates Masa and Samvatsara.
-    """
-    masa_name = calculate_masa_name(sun_lon_at_nm)
-    
-    # Samvatsara: Based on the 60-year cycle starting at 1987 (Prabhava)
+def calculate_masa_samvatsara(year, sun_lon_at_nm, sun_lon_now, lang='EN'):
+    masa_name = calculate_masa_name(sun_lon_at_nm, lang)
     samvat_index = (year - 1987) % 60
+    return masa_name, SAMVATSARAS[lang][samvat_index]
+
+def format_panchanga_report(dt_local, loc_address, loc_timezone, sunrise, sunset, samvatsara, masa, paksha, tithi, vara, nakshatra, nak_pada, yoga, karana, lang='EN'):
+    labels = REPORT_LABELS[lang]
     
-    return masa_name, SAMVATSARAS[samvat_index]
-def format_panchanga_report(dt_local, loc_address, loc_timezone, sunrise, sunset, samvatsara, masa, paksha, tithi, vara, nakshatra, yoga, karana):
     report = f"""
-       HINDU PANCHANGA REPORT
+       {labels['title']}
 ========================================
-Input Date/Time : {dt_local.strftime('%Y-%m-%d %H:%M:%S')} ({loc_timezone})
-Location        : {loc_address}
-Sunrise         : {sunrise.strftime('%H:%M:%S') if sunrise else 'N/A'}
-Sunset          : {sunset.strftime('%H:%M:%S') if sunset else 'N/A'}
+{labels['input_dt']} : {dt_local.strftime('%Y-%m-%d %H:%M:%S')} ({loc_timezone})
+{labels['location']}        : {loc_address}
+{labels['sunrise']}         : {sunrise.strftime('%H:%M:%S') if sunrise else 'N/A'}
+{labels['sunset']}          : {sunset.strftime('%H:%M:%S') if sunset else 'N/A'}
 ----------------------------------------
-Samvatsara      : {samvatsara}
-Masa (Month)    : {masa}
-Paksha          : {paksha}
-Tithi           : {tithi}
-Vara (Weekday)  : {vara}
-Nakshatra       : {nakshatra}
-Yoga            : {yoga}
-Karana (Index)  : {karana}
+{labels['samvatsara']}      : {samvatsara}
+{labels['masa']}    : {masa}
+{labels['paksha']}          : {paksha}
+{labels['tithi']}           : {tithi}
+{labels['vara']}  : {vara}
+{labels['nakshatra']}       : {nakshatra} {labels['pada']} {nak_pada}
+{labels['yoga']}            : {yoga}
+{labels['karana']}  : {karana}
 ========================================
 """
     return report

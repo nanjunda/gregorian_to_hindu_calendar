@@ -1,4 +1,5 @@
 from ics import Calendar, Event
+from datetime import timedelta
 import pytz
 
 def create_ical_content(title, occurrences):
@@ -12,7 +13,7 @@ def create_ical_content(title, occurrences):
         e = Event()
         e.name = title
         e.begin = occurrence["datetime"]
-        e.duration = {"hours": 1} # Standard 1 hour event
+        e.duration = timedelta(hours=1) # Standard 1 hour event
         e.description = occurrence["report"]
         c.events.add(e)
         

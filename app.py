@@ -27,6 +27,7 @@ def generate_ical():
     time_str = data.get('time')
     location_name = data.get('location')
     title = data.get('title', 'Hindu Panchanga Event')
+    lang = data.get('lang', 'EN')
 
     if not all([date_str, time_str, location_name]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -42,7 +43,7 @@ def generate_ical():
         local_dt = local_tz.localize(naive_dt)
 
         # 3. Find Recurrences (20 years starting from current year)
-        occurrences = find_recurrences(local_dt, loc, num_years=20)
+        occurrences = find_recurrences(local_dt, loc, num_years=20, lang=lang)
         
         # 4. Generate iCal content
         ical_data = create_ical_content(title, occurrences)
@@ -63,6 +64,7 @@ def get_panchanga():
     time_str = data.get('time')
     location_name = data.get('location')
     title = data.get('title', 'Event') # Added title support
+    lang = data.get('lang', 'EN')
 
     if not all([date_str, time_str, location_name]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -88,17 +90,17 @@ def get_panchanga():
         sun_lon_at_nm = get_sidereal_longitude(prev_nm_utc, sun)
         
         # 4. Calculate Panchanga Elements
-        vara = calculate_vara(local_dt, sunrise)
-        tithi, paksha = calculate_tithi(sun_lon, moon_lon)
-        nakshatra = calculate_nakshatra(moon_lon)
-        yoga = calculate_yoga(sun_lon, moon_lon)
+        vara = calculate_vara(local_dt, sunrise, lang=lang)
+        tithi, paksha = calculate_tithi(sun_lon, moon_lon, lang=lang)
+        nakshatra, nak_pada = calculate_nakshatra(moon_lon, lang=lang)
+        yoga = calculate_yoga(sun_lon, moon_lon, lang=lang)
         karana_num = calculate_karana(sun_lon, moon_lon)
-        masa, samvatsara = calculate_masa_samvatsara(local_dt.year, sun_lon_at_nm, sun_lon)
+        masa, samvatsara = calculate_masa_samvatsara(local_dt.year, sun_lon_at_nm, sun_lon, lang=lang)
 
         report = format_panchanga_report(
             local_dt, loc["address"], loc["timezone"],
             sunrise, sunset, samvatsara, masa, paksha, tithi,
-            vara, nakshatra, yoga, karana_num
+            vara, nakshatra, nak_pada, yoga, karana_num, lang=lang
         )
 
         return jsonify({
@@ -114,7 +116,7 @@ def get_panchanga():
                 "paksha": paksha,
                 "tithi": tithi,
                 "vara": vara,
-                "nakshatra": nakshatra,
+                "nakshatra": f"{nakshatra} (Pada {nak_pada})",
                 "yoga": yoga,
                 "karana": karana_num,
                 "report": report
