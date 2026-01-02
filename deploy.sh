@@ -64,6 +64,10 @@ sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR
 
 # 3. Setup Virtual Environment in NEW location
 cd $DEPLOY_DIR
+# CRITICAL: We cannot reuse the copied venv because absolute paths (shebangs) are broken after move
+echo "🗑️ Removing copied venv to force clean recreation..."
+sudo rm -rf venv
+
 if [ ! -d "venv" ]; then
     echo "🏗️ Creating virtual environment in $DEPLOY_DIR..."
     python3 -m venv venv
