@@ -9,10 +9,40 @@ APP_NAME="panchanga"
 APP_PATH=$(pwd)
 CURRENT_USER=$(whoami)
 
-# 1. Update system and install dependencies
+# Detect Package Manager
+if command -v apt-get &> /dev/null; then
+    PKG_MGR="apt-get"
+    HTTP_GROUP="www-data"
+    NGINX_CONF_DIR="/etc/nginx/sites-available"
+    NGINX_LINK_DIR="/etc/nginx/sites-enabled"
+elif command -v dnf &> /dev/null; then
+    PKG_MGR="dnf"
+    HTTP_GROUP="nginx"
+    NGINX_CONF_DIR="/etc/nginx/conf.d"
+    NGINX_LINK_DIR="" # RHEL usually reads directly from conf.d
+else
+    echo "❌ Unsupported package manager. Please install manually."
+    exit 1
+fi
+
+echo "📦 Detected package manager: $PKG_MGR"
+
+# 1. Install dependencies
 echo "📦 Installing system dependencies..."
-sudo apt-get update -y
-sudo apt-get install -y python3-pip python3-venv nginx git curl
+if [ "$PKG_MGR" == "apt-get" ]; then
+    sudo apt-get update -y
+    sudo apt-get install -y python3-pip python3-venv nginx git curl
+else
+    sudo dnf install -y python3-pip nginx git-core curl
+    sudo systemctl enable --now nginx
+    # Open firewall for Oracle Linux
+    if command -v firewall-cmd &> /dev/null; then
+        echo "🔥 Opening firewall ports..."
+        sudo firewall-cmd --permanent --add-service=http
+        sudo firewall-cmd --permanent --add-service=https
+        sudo firewall-cmd --reload
+    fi
+fi
 
 # 2. Setup Virtual Environment
 if [ ! -d "venv" ]; then
@@ -27,6 +57,7 @@ echo "🐍 Installing Python packages..."
 # 3. Configure systemd service
 echo "⚙️ Configuring systemd service..."
 sed -e "s|{{USER}}|$CURRENT_USER|g" \
+    -e "s|{{GROUP}}|$HTTP_GROUP|g" \
     -e "s|{{APP_PATH}}|$APP_PATH|g" \
     panchanga.service.template | sudo tee /etc/systemd/system/$APP_NAME.service > /dev/null
 
@@ -36,15 +67,17 @@ sudo systemctl restart $APP_NAME
 
 # 4. Configure Nginx
 echo "🌐 Configuring Nginx..."
-# Use localhost or server IP if no domain provided
 PUBLIC_IP=$(curl -s ifconfig.me || echo "localhost")
 
 sed -e "s|{{DOMAIN_OR_IP}}|$PUBLIC_IP|g" \
     -e "s|{{APP_PATH}}|$APP_PATH|g" \
-    panchanga.nginx.template | sudo tee /etc/nginx/sites-available/$APP_NAME > /dev/null
+    panchanga.nginx.template | sudo tee $NGINX_CONF_DIR/$APP_NAME.conf > /dev/null
 
-sudo ln -sf /etc/nginx/sites-available/$APP_NAME /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
+if [ -n "$NGINX_LINK_DIR" ]; then
+    sudo ln -sf $NGINX_CONF_DIR/$APP_NAME.conf $NGINX_LINK_DIR/
+    sudo rm -f $NGINX_LINK_DIR/default
+fi
+
 sudo nginx -t && sudo systemctl restart nginx
 
 echo "🎉 Deployment complete!"
