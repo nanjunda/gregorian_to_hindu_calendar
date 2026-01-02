@@ -33,7 +33,7 @@ echo "📦 Detected package manager: $PKG_MGR"
 # 1. Install dependencies
 echo "📦 Installing system dependencies..."
 if [ "$PKG_MGR" == "dnf" ]; then
-    sudo dnf install -y python3-pip nginx git-core curl policycoreutils-python-utils
+    sudo dnf install -y python3-pip nginx git-core curl policycoreutils-python-utils openssl
     sudo systemctl enable --now nginx
     
     # Open firewall for Oracle Linux
@@ -138,6 +138,10 @@ echo "🔄 Configuring Log Rotation..."
 if [ -f "$SOURCE_DIR/panchanga.logrotate" ]; then
     sudo cp $SOURCE_DIR/panchanga.logrotate /etc/logrotate.d/panchanga
     sudo chmod 644 /etc/logrotate.d/panchanga
+    
+    # Force hourly execution via cron (system logrotate might only be daily)
+    echo "   Setting up hourly cron job for logs..."
+    echo "0 * * * * root /usr/sbin/logrotate -f /etc/logrotate.d/panchanga" | sudo tee /etc/cron.d/panchanga-rotate > /dev/null
 fi
 
 # 8. SECURITY: Generate Self-Signed Certificate
