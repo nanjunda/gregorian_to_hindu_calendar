@@ -3,11 +3,13 @@
 # Exit on any error
 set -e
 
-echo "🚀 Starting Hindu Panchanga v3.0 Deployment (Nginx Enabled)..."
-echo "ℹ️  Mode: Nginx Reverse Proxy (Port 5080) -> Gunicorn (Internal 8000)"
+echo "🚀 Starting Hindu Panchanga v3.0 Deployment (Nuclear Option)..."
+echo "ℹ️  Mode: Nginx Reverse Proxy (Port 5080) -> Gunicorn"
+echo "⚠️  RELOCATING App to /opt/panchanga to bypass SELinux Home Dir restrictions"
 
 APP_NAME="panchanga"
-APP_PATH=$(pwd)
+SOURCE_DIR=$(pwd)
+DEPLOY_DIR="/opt/$APP_NAME"
 CURRENT_USER=$(whoami)
 
 # Detect Package Manager
@@ -15,7 +17,7 @@ if command -v dnf &> /dev/null; then
     PKG_MGR="dnf"
     HTTP_GROUP="nginx"
     NGINX_CONF_DIR="/etc/nginx/conf.d"
-    NGINX_LINK_DIR="" 
+    NGINX_LINK_DIR=""
 elif command -v apt-get &> /dev/null; then
     PKG_MGR="apt-get"
     HTTP_GROUP="www-data"
@@ -31,7 +33,7 @@ echo "📦 Detected package manager: $PKG_MGR"
 # 1. Install dependencies
 echo "📦 Installing system dependencies..."
 if [ "$PKG_MGR" == "dnf" ]; then
-    sudo dnf install -y python3-pip nginx git-core curl
+    sudo dnf install -y python3-pip nginx git-core curl policycoreutils-python-utils
     sudo systemctl enable --now nginx
     
     # Open firewall for Oracle Linux
@@ -41,23 +43,29 @@ if [ "$PKG_MGR" == "dnf" ]; then
         sudo firewall-cmd --reload
     fi
     
-    # Allow Nginx to bind to custom port 5080 (SELinux)
-    if command -v semanage &> /dev/null; then
-        echo "🛡️ Configuring SELinux for port 5080..."
-        sudo semanage port -a -t http_port_t -p tcp 5080 || true
-    elif command -v setsebool &> /dev/null; then
-        # Fallback: Allow Nginx to bind to any port if semanage is missing
-        sudo setsebool -P httpd_run_stickshift 1 || true 
-        sudo setsebool -P httpd_can_network_connect 1 || true
-    fi
+    # Allow Nginx network connect (Critical)
+    echo "🛡️ Enabling Nginx network connections..."
+    sudo setsebool -P httpd_can_network_connect 1
+    sudo setsebool -P httpd_can_network_relay 1 || true
 else
     sudo apt-get update -y
     sudo apt-get install -y python3-pip python3-venv nginx git curl
 fi
 
-# 2. Setup Virtual Environment
+# 2. Relocate Application to /opt
+echo "🚚 Moving application to $DEPLOY_DIR..."
+# Create directory
+sudo mkdir -p $DEPLOY_DIR
+# Copy files (excluding venv and .git to keep it clean)
+echo "   Copying files..."
+sudo cp -r $SOURCE_DIR/* $DEPLOY_DIR/
+# Fix ownership
+sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR
+
+# 3. Setup Virtual Environment in NEW location
+cd $DEPLOY_DIR
 if [ ! -d "venv" ]; then
-    echo "🏗️ Creating virtual environment..."
+    echo "🏗️ Creating virtual environment in $DEPLOY_DIR..."
     python3 -m venv venv
 fi
 
@@ -65,23 +73,44 @@ echo "🐍 Installing Python packages..."
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt
 
-# 3. Configure systemd service
+# 4. FIX SELINUX (The Nuclear Way)
+if command -v semanage &> /dev/null; then
+    echo "🛡️ Configuring SELinux contexts for /opt/panchanga..."
+    
+    # 1. Allow Nginx to read static files
+    sudo semanage fcontext -a -t httpd_sys_content_t "$DEPLOY_DIR/static(/.*)?"
+    
+    # 2. Allow Systemd/Init to execute Gunicorn (bin_t)
+    sudo semanage fcontext -a -t bin_t "$DEPLOY_DIR/venv/bin(/.*)?"
+    
+    # Apply contexts
+    sudo restorecon -R -v $DEPLOY_DIR
+    
+    # Allow Nginx to listen on 5080
+    sudo semanage port -a -t http_port_t -p tcp 5080 || true
+fi
+
+# Explicit permission fix
+chmod +x $DEPLOY_DIR/venv/bin/*
+
+# 5. Configure systemd service
 echo "⚙️ Configuring systemd service..."
+# Using DEPLOY_DIR now instead of pwd
 sed -e "s|{{USER}}|$CURRENT_USER|g" \
     -e "s|{{GROUP}}|$HTTP_GROUP|g" \
-    -e "s|{{APP_PATH}}|$APP_PATH|g" \
+    -e "s|{{APP_PATH}}|$DEPLOY_DIR|g" \
     panchanga.service.template | sudo tee /etc/systemd/system/$APP_NAME.service > /dev/null
 
 sudo systemctl daemon-reload
 sudo systemctl enable $APP_NAME
 sudo systemctl restart $APP_NAME
 
-# 4. Configure Nginx
+# 6. Configure Nginx
 echo "🌐 Configuring Nginx..."
 PUBLIC_IP=$(curl -s ifconfig.me || echo "localhost")
 
 sed -e "s|{{DOMAIN_OR_IP}}|$PUBLIC_IP|g" \
-    -e "s|{{APP_PATH}}|$APP_PATH|g" \
+    -e "s|{{APP_PATH}}|$DEPLOY_DIR|g" \
     panchanga.nginx.template | sudo tee $NGINX_CONF_DIR/$APP_NAME.conf > /dev/null
 
 if [ -n "$NGINX_LINK_DIR" ]; then
@@ -90,32 +119,7 @@ if [ -n "$NGINX_LINK_DIR" ]; then
 fi
 
 sudo nginx -t && sudo systemctl restart nginx
-# Fix permissions for Nginx access
-echo "🔓 Fixing Nginx permissions..."
-# Allow Nginx to traverse home directory (required if app is in /home/user)
-chmod 711 /home/$CURRENT_USER
-
-# Set group ownership
-sudo chown -R $CURRENT_USER:$HTTP_GROUP $APP_PATH/static
-sudo chmod -R 755 $APP_PATH/static
-
-# Fix SELinux Context for Static Files (Critical for Oracle Linux)
-if command -v chcon &> /dev/null; then
-    echo "🛡️ applying SELinux context to static files..."
-    sudo chcon -R -t httpd_sys_content_t $APP_PATH/static
-    
-    # CRITICAL: Allow Nginx to talk to Gunicorn on localhost:8000
-    echo "🛡️ Enabling Nginx network connections..."
-    sudo setsebool -P httpd_can_network_connect 1
-    sudo setsebool -P httpd_can_network_relay 1 || true
-    # Allow services to run in home directories
-    sudo setsebool -P httpd_enable_homedirs 1 || true
-
-    # Fix Gunicorn Execution from Systemd
-    echo "🛡️ Fixing venv permissions and SELinux context..."
-    chmod +x $APP_PATH/venv/bin/*
-    sudo chcon -R -t bin_t $APP_PATH/venv
-fi
 
 echo "🎉 Deployment complete!"
-echo "App should be accessible at: http://$PUBLIC_IP:5080"
+echo "App is now running from: $DEPLOY_DIR"
+echo "Access at: http://$PUBLIC_IP:5080"
