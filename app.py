@@ -96,6 +96,18 @@ def get_panchanga():
         yoga = calculate_yoga(sun_lon, moon_lon, lang=lang)
         karana_num = calculate_karana(sun_lon, moon_lon)
         masa, samvatsara = calculate_masa_samvatsara(local_dt.year, sun_lon_at_nm, sun_lon, lang=lang)
+        
+        # 5. Calculate Rashi and Lagna (v3.2)
+        from utils.zodiac import get_zodiac_name, ZODIAC_SIGNS
+        from utils.astronomy import get_rashi, get_lagna
+        
+        rashi_idx = get_rashi(moon_lon)
+        rashi_name = get_zodiac_name(rashi_idx, lang)
+        rashi_code = ZODIAC_SIGNS[rashi_idx]["code"]
+        
+        lagna_idx, lagna_deg = get_lagna(local_dt, loc["latitude"], loc["longitude"], loc["timezone"])
+        lagna_name = get_zodiac_name(lagna_idx, lang)
+        lagna_code = ZODIAC_SIGNS[lagna_idx]["code"]
 
         report = format_panchanga_report(
             local_dt, loc["address"], loc["timezone"],
@@ -119,6 +131,8 @@ def get_panchanga():
                 "nakshatra": f"{nakshatra} (Pada {nak_pada})",
                 "yoga": yoga,
                 "karana": karana_num,
+                "rashi": {"name": rashi_name, "code": rashi_code},
+                "lagna": {"name": lagna_name, "code": lagna_code},
                 "report": report
             }
         })

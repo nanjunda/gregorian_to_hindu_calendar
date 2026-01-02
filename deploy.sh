@@ -38,8 +38,11 @@ if [ "$PKG_MGR" == "dnf" ]; then
     
     # Open firewall for Oracle Linux
     if command -v firewall-cmd &> /dev/null; then
-        echo "🔥 Opening firewall port 5080..."
+        echo "🔥 Opening firewall ports (5080, 80, 443)..."
+        # We keep 5080 open just in case, but primary is now 443
         sudo firewall-cmd --permanent --add-port=5080/tcp
+        sudo firewall-cmd --permanent --add-service=http
+        sudo firewall-cmd --permanent --add-service=https
         sudo firewall-cmd --reload
     fi
     
@@ -130,6 +133,32 @@ sudo systemctl daemon-reload
 sudo systemctl enable $APP_NAME
 sudo systemctl restart $APP_NAME
 
+# 7. OPS: Log Rotation
+echo "🔄 Configuring Log Rotation..."
+if [ -f "$SOURCE_DIR/panchanga.logrotate" ]; then
+    sudo cp $SOURCE_DIR/panchanga.logrotate /etc/logrotate.d/panchanga
+    sudo chmod 644 /etc/logrotate.d/panchanga
+fi
+
+# 8. SECURITY: Generate Self-Signed Certificate
+echo "🔒 Generating Self-Signed SSL Certificate..."
+# Ensure directories exist
+sudo mkdir -p /etc/ssl/private
+sudo mkdir -p /etc/ssl/certs
+
+if [ ! -f "/etc/ssl/certs/panchanga-selfsigned.crt" ]; then
+    # Use PUBLIC_IP if available, else localhost
+    CERT_CN=$(curl -s ifconfig.me || echo "localhost")
+    
+    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /etc/ssl/private/panchanga-selfsigned.key \
+        -out /etc/ssl/certs/panchanga-selfsigned.crt \
+        -subj "/C=IN/ST=Karnataka/L=Bangalore/O=HinduPanchanga/OU=Engineering/CN=$CERT_CN"
+    
+    # Set strict permissions for key
+    sudo chmod 600 /etc/ssl/private/panchanga-selfsigned.key
+fi
+
 # 6. Configure Nginx
 echo "🌐 Configuring Nginx..."
 PUBLIC_IP=$(curl -s ifconfig.me || echo "localhost")
@@ -145,6 +174,6 @@ fi
 
 sudo nginx -t && sudo systemctl restart nginx
 
-echo "🎉 Deployment complete!"
-echo "App is now running from: $DEPLOY_DIR"
-echo "Access at: http://$PUBLIC_IP:5080"
+echo "🎉 Deployment complete (v3.2)!"
+echo "App is SECURE at: https://$PUBLIC_IP"
+echo "Note: Accept the self-signed certificate warning in browser."

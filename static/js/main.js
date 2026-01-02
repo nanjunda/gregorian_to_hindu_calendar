@@ -143,6 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('res-vara').textContent = data.vara;
         document.getElementById('res-nakshatra').textContent = data.nakshatra;
         document.getElementById('res-yoga').textContent = data.yoga;
+        document.getElementById('res-rashi').textContent = data.rashi.name;
+        document.getElementById('res-lagna').textContent = data.lagna.name;
 
         document.getElementById('res-sunrise').textContent = data.sunrise;
         document.getElementById('res-sunset').textContent = data.sunset;

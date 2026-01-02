@@ -80,6 +80,62 @@ def get_sunrise_sunset(date_local, lat, lon, timezone_str):
             
     return sunrise, sunset
 
+def get_rashi(moon_lon):
+    """
+    Calculates the Rashi (Moon Sign) index based on Sidereal Longitude.
+    """
+    return int(moon_lon / 30.0) % 12
+
+def get_lagna(date_local, lat, lon, timezone_str):
+    """
+    Calculates the Lagna (Ascendant) Sidereal Longitude and Rashi Index.
+    """
+    # Create Observer
+    observer = earth + Topos(latitude_degrees=lat, longitude_degrees=lon)
+    
+    # Precise time calculation
+    t = ts.from_datetime(date_local)
+    
+    # 1. Get Ayanamsha for this time
+    ayanamsha = get_ayanamsha(t.tt)
+    
+    # 2. Calculate Ascendant (Intersection of Ecliptic and Horizon)
+    # Using simple formula for approximation or Skyfield if possible.
+    # Note: Skyfield doesn't have a direct "ascendant" function in its high-level API easily accessible 
+    # without vector math. We will use the standard formula with GAST.
+    
+    # We compute GAST (Greenwich Apparent Sidereal Time)
+    gast = t.gast 
+    
+    # Local Sidereal Time (LST) in hours
+    lst = (gast + lon / 15.0) % 24.0
+    
+    # Obliquity of Ecliptic (approx 23.44)
+    eps = 23.4392911
+    
+    # Convert degrees to radians
+    lat_rad = np.radians(lat)
+    lst_rad = np.radians(lst * 15.0)
+    eps_rad = np.radians(eps)
+    
+    # tan(Asc) = -cos(LST) / (sin(LST)*cos(eps) + tan(lat)*sin(eps))
+    y = -np.cos(lst_rad)
+    x = (np.sin(lst_rad) * np.cos(eps_rad)) + (np.tan(lat_rad) * np.sin(eps_rad))
+    
+    asc_rad = np.arctan2(y, x)
+    asc_deg_tropical = np.degrees(asc_rad)
+    
+    # Normalize to 0-360
+    asc_deg_tropical = (asc_deg_tropical + 360) % 360
+    
+    # 3. Convert to Sidereal (Nirayana)
+    asc_deg_sidereal = (asc_deg_tropical - ayanamsha) % 360
+    
+    # 4. Get Rashi Index
+    lagna_index = int(asc_deg_sidereal / 30.0) % 12
+    
+    return lagna_index, asc_deg_sidereal
+
 if __name__ == "__main__":
     # Test
     now_utc = datetime.now(pytz.utc)
@@ -92,3 +148,11 @@ if __name__ == "__main__":
     sr, ss = get_sunrise_sunset(datetime.now(), 12.9716, 77.5946, "Asia/Kolkata")
     print(f"Sunrise: {sr}")
     print(f"Sunset: {ss}")
+    
+    # Test Rashi/Lagna
+    r_idx = get_rashi(moon_lon)
+    print(f"Rashi Index: {r_idx}")
+    
+    # Test Lagna (Bangalore)
+    l_idx, l_deg = get_lagna(datetime.now(pytz.timezone("Asia/Kolkata")), 12.9716, 77.5946, "Asia/Kolkata")
+    print(f"Lagna Index: {l_idx}, Deg: {l_deg}")
