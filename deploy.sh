@@ -68,9 +68,16 @@ cd $DEPLOY_DIR
 echo "🗑️ Removing copied venv to force clean recreation..."
 sudo rm -rf venv
 
+# Ensure system python is available (using pyenv from home dir causes SELinux denials)
+if [ "$PKG_MGR" == "dnf" ]; then
+    echo "📦 Installing system Python 3 to avoid /home/opc/.pyenv dependency..."
+    sudo dnf install -y python3
+fi
+
 if [ ! -d "venv" ]; then
-    echo "🏗️ Creating virtual environment in $DEPLOY_DIR..."
-    python3 -m venv venv
+    echo "🏗️ Creating virtual environment in $DEPLOY_DIR using SYSTEM Python..."
+    # Force use of /usr/bin/python3 instead of "python3" (which might find pyenv)
+    /usr/bin/python3 -m venv venv
 fi
 
 echo "🐍 Installing Python packages..."
