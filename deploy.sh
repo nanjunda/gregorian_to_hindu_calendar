@@ -85,10 +85,14 @@ if command -v semanage &> /dev/null; then
     sudo semanage fcontext -a -t httpd_sys_content_t "$DEPLOY_DIR/static(/.*)?"
     
     # 2. Allow Systemd/Init to execute Gunicorn (bin_t)
+    # Applying strictly to the bin folder
     sudo semanage fcontext -a -t bin_t "$DEPLOY_DIR/venv/bin(/.*)?"
     
     # Apply contexts
     sudo restorecon -R -v $DEPLOY_DIR
+    
+    # Explicitly ensure Gunicorn is bin_t (Critical for 203/EXEC)
+    sudo chcon -t bin_t $DEPLOY_DIR/venv/bin/gunicorn
     
     # Allow Nginx to listen on 5080
     sudo semanage port -a -t http_port_t -p tcp 5080 || true
