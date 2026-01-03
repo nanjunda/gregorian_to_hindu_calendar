@@ -18,6 +18,7 @@ def index():
 
 from panchanga.recurrence import find_recurrences
 from utils.ical_gen import create_ical_content
+from utils.skyshot import generate_skymap, get_cache_key, get_cached_image, CACHE_DIR
 from flask import Response, make_response
 
 @app.route('/api/generate-ical', methods=['POST'])
@@ -54,6 +55,71 @@ def generate_ical():
         
         return response
 
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/skyshot', methods=['POST'])
+def get_skyshot():
+    """
+    Generate or retrieve a cached sky map image showing Moon position.
+    """
+    data = request.json
+    date_str = data.get('date')
+    time_str = data.get('time')
+    location_name = data.get('location')
+    title = data.get('title', '')
+    
+    if not all([date_str, time_str, location_name]):
+        return jsonify({"success": False, "error": "Missing required fields"}), 400
+    
+    try:
+        # 1. Resolve location
+        loc = get_location_details(location_name)
+        
+        # 2. Check cache first
+        cache_key = get_cache_key(date_str, time_str, loc["latitude"], loc["longitude"])
+        cached_path = get_cached_image(cache_key)
+        
+        if cached_path:
+            return jsonify({
+                "success": True,
+                "image_url": f"/{cached_path}",
+                "cached": True
+            })
+        
+        # 3. Parse DateTime and calculate astronomical data
+        dt_str = f"{date_str} {time_str}"
+        naive_dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M")
+        local_tz = pytz.timezone(loc["timezone"])
+        local_dt = local_tz.localize(naive_dt)
+        utc_dt = local_dt.astimezone(pytz.utc)
+        
+        # 4. Get Moon position and angular data
+        moon_lon = get_sidereal_longitude(utc_dt, moon)
+        angular_data = get_angular_data(local_dt, loc["latitude"], loc["longitude"], loc["timezone"])
+        
+        # 5. Get Nakshatra info
+        nakshatra, nak_pada = calculate_nakshatra(moon_lon, lang='EN')
+        
+        # 6. Generate sky map
+        output_path = str(CACHE_DIR / f"{cache_key}.png")
+        generate_skymap(
+            moon_longitude=moon_lon,
+            nakshatra_name=nakshatra,
+            nakshatra_pada=nak_pada,
+            phase_angle=angular_data["phase_angle"],
+            output_path=output_path,
+            event_title=title if title else None
+        )
+        
+        return jsonify({
+            "success": True,
+            "image_url": f"/{output_path}",
+            "cached": False,
+            "nakshatra": nakshatra,
+            "moon_longitude": round(moon_lon, 2)
+        })
+        
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

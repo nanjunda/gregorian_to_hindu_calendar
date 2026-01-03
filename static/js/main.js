@@ -191,5 +191,54 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show result grid again
         resultContainer.classList.remove('hidden');
         resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+        // Load the Sky-Shot visualization (Phase 2)
+        loadSkyshot({
+            date: document.getElementById('date').value,
+            time: document.getElementById('time').value,
+            location: locationInput.value,
+            title: document.getElementById('title').value
+        });
+    }
+
+    async function loadSkyshot(data) {
+        const skyshotSection = document.getElementById('skyshot-section');
+        const skyshotImage = document.getElementById('skyshot-image');
+        const skyshotLoader = document.getElementById('skyshot-loader');
+        const skyshotCaption = document.getElementById('skyshot-caption');
+
+        // Show loader, hide image initially
+        skyshotSection.classList.remove('hidden');
+        skyshotLoader.classList.remove('hidden');
+        skyshotImage.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/skyshot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Add cache buster for fresh images
+                const cacheBuster = result.cached ? '' : `?t=${Date.now()}`;
+                skyshotImage.src = result.image_url + cacheBuster;
+                skyshotImage.style.display = 'block';
+                skyshotLoader.classList.add('hidden');
+
+                // Update caption with Nakshatra info if available
+                if (result.nakshatra) {
+                    skyshotCaption.innerHTML = `Moon at <strong>${result.moon_longitude}°</strong> sidereal longitude, in <strong>${result.nakshatra}</strong>`;
+                }
+            } else {
+                console.error('Skyshot error:', result.error);
+                skyshotSection.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Skyshot fetch error:', error);
+            skyshotSection.classList.add('hidden');
+        }
     }
 });

@@ -306,6 +306,62 @@ footer {
     font-size: 0.8rem;
 }
 
+/* Sky-Shot Section Styles */
+#skyshot-section {
+    text-align: center;
+    padding: 2rem;
+}
+
+#skyshot-section h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    color: var(--secondary);
+}
+
+#skyshot-container {
+    max-width: 450px;
+    margin: 0 auto 1.5rem;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow:
+        0 0 40px rgba(233, 69, 96, 0.2),
+        0 0 80px rgba(255, 111, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+#skyshot-container:hover {
+    box-shadow:
+        0 0 60px rgba(233, 69, 96, 0.3),
+        0 0 100px rgba(255, 111, 0, 0.15);
+}
+
+#skyshot-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    animation: fadeIn 0.8s ease-out;
+}
+
+#skyshot-loader {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+#skyshot-loader .spinner {
+    margin-bottom: 1rem;
+}
+
+.caption {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.caption strong {
+    color: var(--secondary);
+}
+
 @media (max-width: 600px) {
     h1 {
         font-size: 2.2rem;
@@ -313,5 +369,10 @@ footer {
 
     .card {
         padding: 1.5rem;
+    }
+
+    #skyshot-container {
+        max-width: 100%;
+        border-radius: 16px;
     }
 }
