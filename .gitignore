@@ -7,3 +7,5 @@ de421.bsp
 *.md
 !docs/*.md
 !README.md
+static/skyshots/
+static/solar_systems/

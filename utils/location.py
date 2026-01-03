@@ -6,7 +6,7 @@ def get_location_details(location_name):
     """
     Given a city/location name, returns lat, lon, and timezone.
     """
-    geolocator = Nominatim(user_agent="hindu_panchanga_converter")
+    geolocator = Nominatim(user_agent="hindu_panchanga_converter", timeout=10)
     location = geolocator.geocode(location_name)
     
     if not location:

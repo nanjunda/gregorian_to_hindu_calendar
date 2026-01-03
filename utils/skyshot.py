@@ -159,14 +159,16 @@ def generate_skymap(
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     
     # Create figure with dark space background
-    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
-    fig.patch.set_facecolor('#0a0a0f')
-    ax.set_facecolor('#0a0a0f')
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    
+    fig = Figure(figsize=(12.5, 12.5), facecolor='#0a0a0f')
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111, polar=True, facecolor='#0a0a0f')
     
     # Draw the 27 Nakshatra segments
     for i, nak in enumerate(NAKSHATRAS):
         # Convert degrees to radians for polar plot
-        # Rotate by 90° so Ashwini (0°) is at top
         start_rad = np.radians(90 - nak["start"])
         end_rad = np.radians(90 - nak["end"])
         
@@ -196,12 +198,11 @@ def generate_skymap(
         mid_angle = (start_rad + end_rad) / 2
         label_r = 0.75
         
-        # Calculate rotation for text to be readable
+        # Calculate rotation
         rotation_deg = np.degrees(mid_angle) - 90
         if -180 < rotation_deg < -90 or 90 < rotation_deg < 180:
             rotation_deg += 180
         
-        # Shorten long names
         short_name = nak["name"][:6] if len(nak["name"]) > 6 else nak["name"]
         
         ax.text(
@@ -215,72 +216,56 @@ def generate_skymap(
         )
     
     # Draw the Moon at its position
-    moon_rad = np.radians(90 - moon_longitude)  # Convert to polar coordinates
+    moon_rad = np.radians(90 - moon_longitude)
     moon_r = 0.75
     
-    # Moon marker (golden circle)
+    # Moon marker
     ax.plot(moon_rad, moon_r, 'o', markersize=28, color='#ffd700', 
             markeredgecolor='#ffffff', markeredgewidth=2, zorder=10)
     
-    # Add moon phase symbol
+    # Add moon phase symbol (using text, avoiding emoji glyph issue if possible)
     moon_symbol = get_moon_phase_symbol(phase_angle)
     ax.text(moon_rad, moon_r, moon_symbol, fontsize=20, ha='center', va='center', zorder=11)
     
     # Draw Earth at center
     ax.plot(0, 0, 'o', markersize=20, color='#4a90d9', 
             markeredgecolor='#ffffff', markeredgewidth=1.5, zorder=5)
-    ax.text(0, 0, '🌍', fontsize=14, ha='center', va='center', zorder=6)
+    ax.text(0, 0, 'EARTH', fontsize=7, ha='center', va='center', color='#ffffff', zorder=6)
     
-    # Add "Earth" label
-    ax.text(0, 0.15, 'Earth', fontsize=8, ha='center', va='center', 
-            color='#888888', zorder=6)
-    
-    # Inner decorative ring
-    inner_ring = plt.Circle((0, 0), 0.45, transform=ax.transData._b, 
-                            fill=False, color='#333344', linewidth=1, linestyle='--')
-    ax.add_patch(inner_ring)
-    
-    # Title - Increased vertical margin to prevent cutoff
-    title_text = f"🌌 Moon in {nakshatra_name}"
+    # Set title - Fixed positioning to avoid clipping
+    title_text = f"Moon in {nakshatra_name}"
     if nakshatra_pada:
         title_text += f" (Pada {nakshatra_pada})"
     
-    # Lower y value to give more head room
     fig.suptitle(
         title_text,
-        fontsize=22, color='#ffffff', fontweight='bold', y=0.95,
-        fontfamily='sans-serif', horizontalalignment='center'
+        fontsize=22, color='#ffffff', fontweight='bold', y=0.92,
+        fontfamily='sans-serif'
     )
-    
-    # Subtitle with event title if provided
-    if event_title:
-        ax.set_title(f'"{event_title}"', fontsize=13, color='#ff9100', 
-                     pad=30, fontfamily='sans-serif')
     
     # Caption at bottom
     caption_text = f"Moon Position: {moon_longitude:.1f}° Sidereal  |  Phase: {phase_angle:.0f}°"
-    fig.text(0.5, 0.06, caption_text, ha='center', va='center',
+    fig.text(0.5, 0.08, caption_text, ha='center', va='center',
              fontsize=12, color='#888888', fontfamily='sans-serif')
     
     # Educational note
-    fig.text(0.5, 0.03, 
+    fig.text(0.5, 0.04, 
              "Ecliptic wheel showing the Moon's position among the 27 Nakshatras",
              ha='center', va='center', fontsize=10, color='#555555', 
              style='italic', fontfamily='sans-serif')
     
     # Configure polar plot
-    ax.set_theta_zero_location('N')  # 0° at top (North)
-    ax.set_theta_direction(-1)  # Clockwise direction
+    ax.set_theta_zero_location('N')
+    ax.set_theta_direction(-1)
     ax.set_ylim(0, 1.05)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.spines['polar'].set_visible(False)
     
-    # Save the figure with significant padding to avoid any possible clipping
-    plt.savefig(output_path, dpi=150, bbox_inches='tight', 
+    # Save the figure with extra padding
+    fig.savefig(output_path, dpi=150, bbox_inches='tight', 
                 facecolor=fig.get_facecolor(), edgecolor='none',
                 pad_inches=0.8)
-    plt.close(fig)
     
     return output_path
 

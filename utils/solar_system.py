@@ -60,14 +60,18 @@ def generate_solar_system(utc_dt: datetime, output_path: str, event_title: str =
         pos = astrometric.frame_xyz(ecliptic_frame).au
         positions[name] = (pos[0], pos[1]) # X, Y coordinates
 
-    # Setup Plot
-    fig, ax = plt.subplots(figsize=(10, 10))
-    fig.patch.set_facecolor('#0a0a0f')
-    ax.set_facecolor('#0a0a0f')
+    # Setup Plot - Thread Safe
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    
+    fig = Figure(figsize=(12.5, 12.5), facecolor='#0a0a0f')
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111, facecolor='#0a0a0f')
     
     # Sun at center with glow
+    import matplotlib.patches as patches
     for r_glow in [0.2, 0.1]:
-        glow = plt.Circle((0, 0), r_glow, color='#ffcc00', alpha=0.3, zorder=9)
+        glow = patches.Circle((0, 0), r_glow, color='#ffcc00', alpha=0.3, zorder=9)
         ax.add_patch(glow)
     ax.plot(0, 0, 'o', markersize=24, color='#ffcc00', 
             markeredgecolor='#ffffff', markeredgewidth=1.5, label='Sun', zorder=10)
@@ -105,7 +109,7 @@ def generate_solar_system(utc_dt: datetime, output_path: str, event_title: str =
         max_r = max(max_r, r)
         
         # Draw Orbit circle - more prominent
-        circle = plt.Circle((0, 0), r, color='#444455', fill=False, linestyle='-', alpha=0.2, linewidth=1)
+        circle = patches.Circle((0, 0), r, color='#444455', fill=False, linestyle='-', alpha=0.2, linewidth=1)
         ax.add_patch(circle)
         
         # Planet with glow
@@ -132,11 +136,10 @@ def generate_solar_system(utc_dt: datetime, output_path: str, event_title: str =
     ax.scatter(stars_x, stars_y, s=1, color='#ffffff', alpha=0.2, zorder=1)
 
     # Titles
-    plt.title("PLANETARY ALIGNMENTS AT BIRTH", color='#ffffff', fontsize=20, fontweight='bold', pad=30, fontfamily='sans-serif')
+    fig.suptitle("PLANETARY ALIGNMENTS AT BIRTH", color='#ffffff', fontsize=20, fontweight='bold', y=0.94, fontfamily='sans-serif')
     if event_title:
-        plt.suptitle(f'"{event_title}"', color='#ff9100', fontsize=13, y=0.92, fontfamily='sans-serif')
+        fig.text(0.5, 0.90, f'"{event_title}"', color='#ff9100', fontsize=13, ha='center', fontfamily='sans-serif')
     
-    # Save the figure
-    plt.savefig(output_path, dpi=130, bbox_inches='tight', facecolor='#0a0a0f', pad_inches=0.5)
-    plt.close(fig)
+    # Save the figure with padding
+    fig.savefig(output_path, dpi=130, bbox_inches='tight', facecolor='#0a0a0f', pad_inches=0.5)
     return output_path
