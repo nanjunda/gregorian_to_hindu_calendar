@@ -36,7 +36,7 @@ def get_cache_key(date_str: str, time_str: str) -> str:
     data = f"solar-{date_str}-{time_str}"
     return hashlib.md5(data.encode()).hexdigest()[:12]
 
-def get_cached_image(cache_key: str) -> str | None:
+def get_cached_image(cache_key: str):
     image_path = CACHE_DIR / f"{cache_key}.png"
     if image_path.exists():
         return str(image_path)

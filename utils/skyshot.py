@@ -70,7 +70,7 @@ def get_cache_key(date_str: str, time_str: str, lat: float, lon: float) -> str:
     return hashlib.md5(data.encode()).hexdigest()[:12]
 
 
-def get_cached_image(cache_key: str) -> str | None:
+def get_cached_image(cache_key: str):
     """
     Check if a cached sky map image exists.
     
@@ -270,7 +270,7 @@ def generate_skymap(
     return output_path
 
 
-def get_nakshatra_info(nakshatra_name: str) -> dict | None:
+def get_nakshatra_info(nakshatra_name: str):
     """
     Get detailed information about a Nakshatra by name.
     
