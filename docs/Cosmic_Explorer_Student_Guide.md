@@ -67,4 +67,12 @@ So, Rahu and Ketu aren't physical rocks; they are **mathematical danger zones** 
 *   Why do you think ancient cultures needed to track the sky so badly? (Hint: Think about farming and seasons!)
 *   Check your "Western" sign and compare it to your "Vedic" sign. They are likely different. That difference is the **23-degree wobble** of the Earth!
 
+---
+
+## 5. Privacy & Safety
+**Important Note:** Your privacy is our priority.
+*   **Stealth Mode:** This website does not save *any* of the data you enter. It has no database.
+*   **No Tracking:** Once your "Cosmic Dashboard" is generated, the information vanishes from the server.
+*   **Log Erasure:** Even the system logs that help the server run are automatically erased to ensure your birth details remain completely private to you.
+
 **Welcome to the true sky.**
