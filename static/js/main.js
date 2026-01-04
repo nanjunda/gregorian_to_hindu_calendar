@@ -265,10 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const solarSection = document.getElementById('solar-system-section');
         const solarImage = document.getElementById('solar-system-image');
         const solarLoader = document.getElementById('solar-loader');
+        const solarTitleArea = document.getElementById('solar-dynamic-title');
+        const solarMainTitle = document.getElementById('solar-main-title');
 
         // Show section and loader
         solarSection.classList.remove('hidden');
         solarLoader.classList.remove('hidden');
+        solarTitleArea.style.opacity = '0.3'; // Dim while loading
         solarImage.style.display = 'none';
 
         try {
@@ -281,7 +284,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.success) {
-                // Use Base64 data directly (No public URL)
+                // Update HTML Title (v4.1)
+                solarMainTitle.textContent = data.title || 'Cosmic Alignment';
+                solarTitleArea.style.opacity = '1';
+
+                // Use Base64 data directly
                 solarImage.src = result.image_data;
                 solarImage.style.display = 'block';
                 solarLoader.classList.add('hidden');

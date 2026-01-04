@@ -144,11 +144,6 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
     stars_y = np.random.uniform(-max_r*padding, max_r*padding, 50)
     ax.scatter(stars_x, stars_y, s=1, color='#ffffff', alpha=0.2, zorder=1)
 
-    # Titles - Generic Cosmic Alignment
-    fig.suptitle("COSMIC ALIGNMENT", color='#ffffff', fontsize=24, fontweight='bold', y=0.94, fontfamily='sans-serif')
-    if event_title:
-        fig.text(0.5, 0.90, f'"{event_title}"', color='#ff9100', fontsize=15, ha='center', fontfamily='sans-serif')
-    
-    # Save the figure with padding
-    fig.savefig(output_path, dpi=130, bbox_inches='tight', facecolor='#0a0a0f', pad_inches=0.5)
+    # Save the figure with clean padding - No internal titles (v4.1)
+    fig.savefig(output_path, dpi=130, bbox_inches='tight', facecolor='#0a0a0f', pad_inches=0.2)
     return output_path
