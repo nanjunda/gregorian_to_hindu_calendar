@@ -1,14 +1,15 @@
 # Hindu Panchanga Converter v4.1 - Design Guide
 
 ## 1. Introduction
-The **Hindu Panchanga Converter** is a high-precision astronomical and Vedic calendar engine. Its primary objective is to bridge the gap between ancient Vedic science and modern celestial mechanics. Version 4.1 adds a **"Bridge to the West"** by incorporating Western astronomical star names and zodiac equivalents alongside Vedic names.
+The **Hindu Panchanga Converter** is a high-precision astronomical and Vedic calendar engine. Its primary objective is to bridge the gap between ancient Vedic science and modern celestial mechanics. Version 4.1 makes the engine **Generic**—allowing it to convert any Gregorian event (Birth, Festival, Muhurta) into its full Vedic equivalent with supporting cosmic visualizations.
 
 ---
 
-## 2. Bridge Strategy (v4.1 Updates)
-1. **Hybrid Naming**: Nakshatras, Rashis, and Lagnas now display the Vedic name followed by the Western equivalent in brackets (e.g., *Mesha (Aries)* or *Ashwini (Beta Arietis)*).
-2. **Next 20 Birthdays**: The iCal engine now ignores year boundaries and finds exactly the next 20 occurrences of a Vedic birth date.
-3. **Birthday Spotlight**: The UI prominently displays the very next Gregorian date corresponding to the user's Vedic birth details.
+## 2. Universal Strategy (v4.1 Updates)
+1. **Hybrid Naming**: Nakshatras, Rashis, Lagnas, and Planets now display the Vedic name followed by the Western equivalent (e.g., *Mesha (Aries)* or *Budha (Mercury)*).
+2. **Dynamic Canvas Scaling**: The "Cosmic Alignment" canvas is increased by 23% to accommodate high-detail hybrid naming.
+3. **Optimized Visuals**: Sky-map titles are repositioned to prevent clipping, and terminologies are shifted from "Birth" to "Cosmic" to fit any event type.
+4. **Next 20 Occurrences**: The iCal engine now finds exactly the next 20 occurrences of a Vedic date (Anniversaries), ideal for recurring annual festivals or birthdays.
 
 ---
 

@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('iCal error:', error);
             alert('Failed to generate iCal file.');
         } finally {
-            downloadBtn.textContent = 'Download Next 20 Birthdays (.ics)';
+            downloadBtn.textContent = 'Download Next 20 Occurrences (.ics)';
             downloadBtn.disabled = false;
         }
     });

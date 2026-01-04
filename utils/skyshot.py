@@ -233,13 +233,13 @@ def generate_skymap(
     ax.text(0, 0, 'EARTH', fontsize=7, ha='center', va='center', color='#ffffff', zorder=6)
     
     # Set title - Fixed positioning to avoid clipping
-    title_text = f"Moon in {nakshatra_name}"
+    title_text = f"Moon position in {nakshatra_name}"
     if nakshatra_pada:
         title_text += f" (Pada {nakshatra_pada})"
     
     fig.suptitle(
         title_text,
-        fontsize=22, color='#ffffff', fontweight='bold', y=0.92,
+        fontsize=22, color='#ffffff', fontweight='bold', y=0.82,
         fontfamily='sans-serif'
     )
     
@@ -250,7 +250,7 @@ def generate_skymap(
     
     # Educational note
     fig.text(0.5, 0.04, 
-             "Ecliptic wheel showing the Moon's position among the 27 Nakshatras",
+             "Ecliptic wheel showing the Moon's sidereal position among the Nakshatras",
              ha='center', va='center', fontsize=10, color='#555555', 
              style='italic', fontfamily='sans-serif')
     

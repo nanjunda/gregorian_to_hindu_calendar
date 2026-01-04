@@ -57,11 +57,21 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         pos = astrometric.frame_xyz(ecliptic_frame).au
         positions[name] = (pos[0], pos[1]) # X, Y coordinates
 
+    # Vedic names map (Western in brackets)
+    vedic_names = {
+        "Mercury": "BUDHA (MERCURY)",
+        "Venus": "SHUKRA (VENUS)",
+        "Earth": "PRITHVI (EARTH)",
+        "Mars": "MANGALA (MARS)",
+        "Jupiter": "GURU (JUPITER)",
+        "Saturn": "SHANI (SATURN)"
+    }
+
     # Setup Plot - Thread Safe
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     
-    fig = Figure(figsize=(15.0, 15.0), facecolor='#0a0a0f')
+    fig = Figure(figsize=(18.5, 18.5), facecolor='#0a0a0f')
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111, facecolor='#0a0a0f')
     
@@ -72,7 +82,7 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         ax.add_patch(glow)
     ax.plot(0, 0, 'o', markersize=24, color='#ffcc00', 
             markeredgecolor='#ffffff', markeredgewidth=1.5, label='Sun', zorder=10)
-    ax.text(0, -0.5, 'SUN', color='#ffffff', ha='center', fontsize=14, fontweight='bold')
+    ax.text(0, -0.6, 'SUN (SURYA)', color='#ffffff', ha='center', fontsize=16, fontweight='bold')
 
     # Orbit Radii for visualization
     colors = {
@@ -111,13 +121,14 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         
         # Add Colored Symbol as the Marker (Replacement for circle)
         ax.text(sx, sy, symbols[name], color=colors[name], ha='center', va='center', 
-                fontsize=24, fontweight='bold', zorder=15)
+                fontsize=28, fontweight='bold', zorder=15)
         
         # Add Name label next to symbol - Adaptive offsetting
         # If planet is on the right half, label to the right. If left, label to the left.
         ha = 'left' if sx >= 0 else 'right'
-        offset = 0.4 if sx >= 0 else -0.4
-        ax.text(sx + offset, sy, name.upper(), color=colors[name], 
+        offset = 0.5 if sx >= 0 else -0.5
+        v_name = vedic_names.get(name, name.upper())
+        ax.text(sx + offset, sy, v_name, color=colors[name], 
                 ha=ha, va='center', fontsize=14, fontweight='bold', zorder=15)
 
     # Styling
@@ -133,10 +144,10 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
     stars_y = np.random.uniform(-max_r*padding, max_r*padding, 50)
     ax.scatter(stars_x, stars_y, s=1, color='#ffffff', alpha=0.2, zorder=1)
 
-    # Titles
-    fig.suptitle("PLANETARY ALIGNMENTS AT BIRTH", color='#ffffff', fontsize=20, fontweight='bold', y=0.94, fontfamily='sans-serif')
+    # Titles - Generic Cosmic Alignment
+    fig.suptitle("COSMIC ALIGNMENT", color='#ffffff', fontsize=24, fontweight='bold', y=0.94, fontfamily='sans-serif')
     if event_title:
-        fig.text(0.5, 0.90, f'"{event_title}"', color='#ff9100', fontsize=13, ha='center', fontfamily='sans-serif')
+        fig.text(0.5, 0.90, f'"{event_title}"', color='#ff9100', fontsize=15, ha='center', fontfamily='sans-serif')
     
     # Save the figure with padding
     fig.savefig(output_path, dpi=130, bbox_inches='tight', facecolor='#0a0a0f', pad_inches=0.5)
