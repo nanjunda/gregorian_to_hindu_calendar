@@ -99,6 +99,13 @@ if command -v semanage &> /dev/null; then
     # 1. Allow Nginx to read static files
     sudo semanage fcontext -a -t httpd_sys_content_t "$DEPLOY_DIR/static(/.*)?"
     
+    # Ensure directories exist and have correct permissions for Nginx to read
+    sudo mkdir -p $DEPLOY_DIR/static/skyshots $DEPLOY_DIR/static/solar_systems
+    sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR/static
+    sudo chmod -R 775 $DEPLOY_DIR/static
+    # Set setgid bit so new files inherit the 'nginx' group
+    sudo find $DEPLOY_DIR/static -type d -exec chmod g+s {} +
+    
     # 2. Allow Systemd/Init to execute Gunicorn (bin_t)
     # Applying strictly to the bin folder
     sudo semanage fcontext -a -t bin_t "$DEPLOY_DIR/venv/bin(/.*)?"

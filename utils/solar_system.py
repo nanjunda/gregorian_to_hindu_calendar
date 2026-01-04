@@ -13,13 +13,8 @@ import numpy as np
 import hashlib
 import os
 from pathlib import Path
-from skyfield.api import load
-from datetime import datetime
-import pytz
+from utils.astronomy import eph, sun, ts
 
-# Load ephemeris data (re-using what's already in the project)
-eph = load('de421.bsp')
-sun = eph['sun']
 planets_map = {
     "Mercury": eph['mercury'],
     "Venus": eph['venus'],
@@ -31,7 +26,7 @@ planets_map = {
 
 CACHE_DIR = Path("static/solar_systems")
 
-def get_cache_key(date_str: str, time_str: str) -> str:
+def get_cache_key(date_str: str, time_str: str):
     """Heliocentric view only depends on date/time, not observer location."""
     data = f"solar-{date_str}-{time_str}"
     return hashlib.md5(data.encode()).hexdigest()[:12]
@@ -42,11 +37,13 @@ def get_cached_image(cache_key: str):
         return str(image_path)
     return None
 
-def generate_solar_system(utc_dt: datetime, output_path: str, event_title: str = None) -> str:
+def generate_solar_system(utc_dt, output_path, event_title=None):
     """
     Generate a top-down heliocentric view of the solar system.
     """
-    ts = load.timescale()
+    # Ensure cache directory exists
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    
     t = ts.from_datetime(utc_dt)
     
     positions = {}
