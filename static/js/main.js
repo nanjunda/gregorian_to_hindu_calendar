@@ -230,9 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.success) {
-                // Add cache buster for fresh images
-                const cacheBuster = result.cached ? '' : `?t=${Date.now()}`;
-                skyshotImage.src = result.image_url + cacheBuster;
+                // Use Base64 data directly (No public URL)
+                skyshotImage.src = result.image_data;
                 skyshotImage.style.display = 'block';
                 skyshotLoader.classList.add('hidden');
 
@@ -270,8 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.success) {
-                const cacheBuster = result.cached ? '' : `?t=${Date.now()}`;
-                solarImage.src = result.image_url + cacheBuster;
+                // Use Base64 data directly (No public URL)
+                solarImage.src = result.image_data;
                 solarImage.style.display = 'block';
                 solarLoader.classList.add('hidden');
             } else {

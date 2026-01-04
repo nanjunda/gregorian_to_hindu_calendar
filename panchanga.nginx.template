@@ -24,5 +24,13 @@ server {
 
     location /static {
         alias {{APP_PATH}}/static;
+        
+        # PRIVACY HARDENING: 
+        # Prohibit direct browser access to birth data images.
+        # These are served via Base64 in the API instead.
+        location ~* /(skyshots|solar_systems)/ {
+            deny all;
+            return 403;
+        }
     }
 }

@@ -9,6 +9,7 @@ from panchanga.calculations import (
 )
 from utils.astronomy import get_sidereal_longitude, get_sunrise_sunset, sun, moon, get_previous_new_moon, get_angular_data
 import os
+import base64
 
 app = Flask(__name__)
 
@@ -82,9 +83,11 @@ def get_skyshot():
         cached_path = get_cached_image(cache_key)
         
         if cached_path:
+            with open(cached_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
             return jsonify({
                 "success": True,
-                "image_url": f"/{cached_path}",
+                "image_data": f"data:image/png;base64,{encoded_string}",
                 "cached": True
             })
         
@@ -113,9 +116,13 @@ def get_skyshot():
             event_title=title if title else None
         )
         
+        # 7. Convert to Base64 for privacy (No public URL)
+        with open(output_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        
         return jsonify({
             "success": True,
-            "image_url": f"/{output_path}",
+            "image_data": f"data:image/png;base64,{encoded_string}",
             "cached": False,
             "nakshatra": nakshatra,
             "moon_longitude": round(moon_lon, 2)
@@ -147,9 +154,11 @@ def get_solar_system():
         cached_path = get_solar_cached_image(cache_key)
         
         if cached_path:
+            with open(cached_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
             return jsonify({
                 "success": True,
-                "image_url": f"/{cached_path}",
+                "image_data": f"data:image/png;base64,{encoded_string}",
                 "cached": True
             })
         
@@ -168,9 +177,13 @@ def get_solar_system():
             event_title=title if title else None
         )
         
+        # 5. Convert to Base64 for privacy (No public URL)
+        with open(output_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            
         return jsonify({
             "success": True,
-            "image_url": f"/{output_path}",
+            "image_data": f"data:image/png;base64,{encoded_string}",
             "cached": False
         })
         
