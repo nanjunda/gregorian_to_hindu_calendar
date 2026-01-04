@@ -290,5 +290,12 @@ def explore():
     """
     return render_template('flyer.html')
 
+@app.route('/guide')
+def guide():
+    """
+    Serve the interactive HTML Student Guide.
+    """
+    return render_template('guide.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5080, debug=True)

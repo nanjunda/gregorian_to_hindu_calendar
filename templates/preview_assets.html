@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Visual Asset Review</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #0a0a0f;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h3 {
+            color: #ff9100;
+            margin-bottom: 0.5rem;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        /* SVG CSS for Race Track */
+        .svg-container {
+            width: 100%;
+            aspect-ratio: 1;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .track {
+            fill: none;
+            stroke: rgba(255, 145, 0, 0.2);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+
+        .zodiac-band {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 40;
+        }
+
+        .sun {
+            fill: #ffcc00;
+            filter: drop-shadow(0 0 10px #ffcc00);
+        }
+
+        .planet {
+            r: 6;
+        }
+
+        .planet-orbit {
+            animation: orbit linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Cosmic Explorer Assets (Review)</h1>
+    <div class="gallery">
+
+        <!-- Image 1: Lunar Nodes (Existing) -->
+        <div class="card">
+            <h3>1. The Lunar Nodes (Rahu/Ketu)</h3>
+            <p>Shows the "Hula Hoop" intersection concept clearly.</p>
+            <img src="/static/img/lunar_nodes.png" alt="Lunar Nodes">
+        </div>
+
+        <!-- Image 2: Earth Wobble (Existing) -->
+        <div class="card">
+            <h3>2. The Great Wobble (Precession)</h3>
+            <p>Shows Earth spinning like a top, shifting the pole star.</p>
+            <img src="/static/img/earth_wobble.png" alt="Earth Wobble">
+        </div>
+
+        <!-- Image 3: The Race Track (Live SVG) -->
+        <div class="card">
+            <h3>3. Celestial Highway (Proposed SVG)</h3>
+            <p>A "Race Track" view of the Ecliptic (Code-generated).</p>
+            <div class="svg-container">
+                <svg viewBox="-200 -200 400 400" width="100%" height="100%">
+                    <!-- Zodiac Band -->
+                    <circle cx="0" cy="0" r="180" class="zodiac-band" />
+                    <text x="0" y="-185" text-anchor="middle" fill="#555" font-size="10">ZODIAC BOUNDARY</text>
+
+                    <!-- Tracks -->
+                    <circle cx="0" cy="0" r="140" class="track" />
+                    <circle cx="0" cy="0" r="100" class="track" />
+                    <circle cx="0" cy="0" r="60" class="track" />
+
+                    <!-- Sun -->
+                    <circle cx="0" cy="0" r="20" class="sun" />
+
+                    <!-- Planets (Cars) -->
+                    <g class="planet-orbit" style="animation-duration: 8s;">
+                        <circle cx="60" cy="0" r="5" fill="#aaa" /> <!-- Mercury -->
+                    </g>
+                    <g class="planet-orbit" style="animation-duration: 12s;">
+                        <circle cx="100" cy="0" r="7" fill="#4a90d9" /> <!-- Earth -->
+                    </g>
+                    <g class="planet-orbit" style="animation-duration: 20s;">
+                        <circle cx="140" cy="0" r="9" fill="#e94560" /> <!-- Mars -->
+                    </g>
+
+                    <!-- Labels -->
+                    <text x="0" y="195" text-anchor="middle" fill="#ff9100" font-size="12">THE ECLIPTIC "TRACK"</text>
+                </svg>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

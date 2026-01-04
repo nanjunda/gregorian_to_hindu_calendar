@@ -24,6 +24,7 @@
             font-size: 3.5rem;
             font-weight: 700;
             background: linear-gradient(135deg, #FF6F00 0%, #FFD54F 100%);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
@@ -31,89 +32,40 @@
             text-transform: uppercase;
         }
 
-        .hero-subtitle {
-            font-size: 1.5rem;
-            color: var(--text-white);
-            margin-bottom: 2rem;
-            font-weight: 300;
-            opacity: 0.9;
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
         }
 
-        .poster-art {
-            width: 100%;
-            max-width: 600px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            margin: 2rem auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s ease;
-        }
+        /* ... (rest of styles) ... */
 
-        .poster-art:hover {
-            transform: scale(1.02);
-        }
-
-        .story-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin: 4rem 0;
-            text-align: left;
-        }
-
-        .story-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.2s ease;
-        }
-
-        .story-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-5px);
-        }
-
-        .story-card h3 {
-            color: var(--secondary);
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .story-card p {
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .cta-button {
+        .guide-button {
             display: inline-block;
-            background: linear-gradient(135deg, #FF6F00 0%, #E64A19 100%);
-            color: white;
+            background: transparent;
+            color: var(--secondary);
             padding: 1.2rem 3rem;
             border-radius: 50px;
             font-size: 1.3rem;
             font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 4px 20px rgba(255, 111, 0, 0.4);
-            transition: all 0.3s ease;
+            border: 2px solid var(--secondary);
             margin-top: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-left: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .cta-button:hover {
+        .guide-button:hover {
+            background: rgba(255, 145, 0, 0.1);
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 111, 0, 0.6);
-            background: linear-gradient(135deg, #FFA000 0%, #FF6F00 100%);
         }
 
-        @media (max-width: 768px) {
-            .story-section {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 600px) {
 
-            .hero-title {
-                font-size: 2.5rem;
+            .cta-button,
+            .guide-button {
+                display: block;
+                width: 100%;
+                margin: 1rem 0;
             }
         }
     </style>
@@ -153,9 +105,12 @@
         <section class="cta-section">
             <h2 style="color:white; margin-bottom: 1rem;">Ready to see your sky?</h2>
             <p style="color:var(--text-muted); max-width: 600px; margin: 0 auto;">
-                Enter your biirth date or any special event to generate a personalized Cosmic Dashboard.
+                Enter your birth date or any special event to generate a personalized Cosmic Dashboard.
             </p>
-            <a href="/" class="cta-button">Launch Time Machine ✨</a>
+            <div style="margin-top: 2rem;">
+                <a href="/" class="cta-button">Launch Time Machine ✨</a>
+                <a href="/guide" class="guide-button">📖 Read Student Guide</a>
+            </div>
         </section>
 
         <footer style="margin-top: 5rem; color: #555; font-size: 0.9rem;">

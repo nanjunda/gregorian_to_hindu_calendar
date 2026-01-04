@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Guide: The True Sky</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .guide-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .guide-header {
+            text-align: center;
+            padding: 4rem 0;
+            background: radial-gradient(circle at center, rgba(74, 144, 217, 0.1) 0%, transparent 70%);
+        }
+
+        .guide-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .chapter {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin: 6rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Alternate Layout */
+        .chapter.reverse {
+            direction: rtl;
+            /* Hack to flip grid */
+        }
+
+        .chapter.reverse>* {
+            direction: ltr;
+            /* Reset text direction */
+        }
+
+        .chapter-content h2 {
+            font-size: 2rem;
+            color: var(--text-white);
+            margin-bottom: 1.5rem;
+        }
+
+        .chapter-content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .visual-container {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .visual-container img {
+            width: 100%;
+            display: block;
+        }
+
+        /* SVG Race Track Styles */
+        .track-svg {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+        }
+
+        .track {
+            fill: none;
+            stroke: rgba(255, 145, 0, 0.2);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+
+        .zodiac-band {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 40;
+        }
+
+        .sun {
+            fill: #ffcc00;
+            filter: drop-shadow(0 0 10px #ffcc00);
+        }
+
+        .planet {
+            r: 6;
+        }
+
+        .planet-orbit {
+            animation: orbit linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 4rem;
+            color: var(--text-white);
+            text-decoration: none;
+            border: 1px solid var(--secondary);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+
+            .chapter,
+            .chapter.reverse {
+                grid-template-columns: 1fr;
+                direction: ltr;
+                gap: 2rem;
+            }
+
+            .guide-title {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="guide-container">
+        <header class="guide-header">
+            <h1 class="guide-title">Guide to the True Sky</h1>
+            <p style="color: var(--text-muted); font-size: 1.2rem;">Understanding the GPS of the Ancients</p>
+        </header>
+
+        <!-- Chapter 1: The Race Track -->
+        <section class="chapter">
+            <div class="chapter-content">
+                <h2>1. The Cosmic Race Track</h2>
+                <p>Imagine the Solar System as a giant race track. The Sun is in the center, and the planets are cars
+                    racing around it.</p>
+                <p>The <strong>Zodiac</strong> isn't magic—it's just the "Stadium Seating." It’s the band of stars
+                    surrounding the track. When we say "Mars is in Aries," it just means: <em>"If you look at the Mars
+                        car from Earth, the Aries section of the stadium is behind it."</em></p>
+            </div>
+            <div class="visual-container" style="aspect-ratio: 1;">
+                <!-- Live SVG Animation -->
+                <svg viewBox="-200 -200 400 400" class="track-svg">
+                    <circle cx="0" cy="0" r="180" class="zodiac-band" />
+                    <text x="0" y="-185" text-anchor="middle" fill="#555" font-size="10">ZODIAC SECTOR</text>
+                    <circle cx="0" cy="0" r="140" class="track" />
+                    <circle cx="0" cy="0" r="100" class="track" />
+                    <circle cx="0" cy="0" r="60" class="track" />
+                    <circle cx="0" cy="0" r="20" class="sun" />
+                    <g class="planet-orbit" style="animation-duration: 8s;">
+                        <circle cx="60" cy="0" r="5" fill="#aaa" />
+                    </g>
+                    <g class="planet-orbit" style="animation-duration: 12s;">
+                        <circle cx="100" cy="0" r="7" fill="#4a90d9" />
+                    </g>
+                    <g class="planet-orbit" style="animation-duration: 20s;">
+                        <circle cx="140" cy="0" r="9" fill="#e94560" />
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Chapter 2: The Great Wobble -->
+        <section class="chapter reverse">
+            <div class="chapter-content">
+                <h2>2. The Great Wobble</h2>
+                <p>Have you ever spun a toy top? As it slows down, it starts to wobble. <strong>Earth does the same
+                        thing.</strong></p>
+                <p>This wobble is super slow—one circle takes 26,000 years! Because of this, the "West" (Tropical
+                    Zodiac) and the "East" (Vedic/Sidereal Zodiac) have drifted apart.</p>
+                <p><strong>Western Astrology</strong> freezes the sky as it was 2,000 years ago. <strong>Vedic
+                        Astronomy</strong> tracks where the stars actually are <em>right now</em>.</p>
+            </div>
+            <div class="visual-container">
+                <img src="/static/img/earth_wobble.png" alt="Precession of Equinoxes Diagram">
+            </div>
+        </section>
+
+        <!-- Chapter 3: Rahu & Ketu -->
+        <section class="chapter">
+            <div class="chapter-content">
+                <h2>3. The Mystery of Nodes</h2>
+                <p>You will see points called <strong>Rahu</strong> and <strong>Ketu</strong>. In stories, they are
+                    dragons.</p>
+                <p>In science, they are <strong>Intersection Points</strong>. Think of two Hula Hoops: the Gold one is
+                    Earth’s path, the Blue one is the Moon’s.</p>
+                <p>The Blue hoop is tilted. Rahu and Ketu are the only two spots where the hoops <strong>cross</strong>.
+                    Eclipses can <em>only</em> happen at these exact danger zones!</p>
+            </div>
+            <div class="visual-container">
+                <img src="/static/img/lunar_nodes.png" alt="Lunar Nodes Diagram">
+            </div>
+        </section>
+
+        <div style="text-align: center;">
+            <a href="/explore" class="back-button">← Back to Explorer</a>
+        </div>
+
+        <!-- Privacy Footer -->
+        <footer style="margin-top: 5rem; text-align: center; color: #555; padding-bottom: 2rem;">
+            <p><strong>Privacy Note:</strong> This site uses "Stealth Mode". No data is saved. Logs are erased.</p>
+        </footer>
+    </div>
+</body>
+
+</html>
