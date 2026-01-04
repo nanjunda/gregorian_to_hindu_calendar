@@ -33,7 +33,8 @@ echo "📦 Detected package manager: $PKG_MGR"
 # 1. Install dependencies
 echo "📦 Installing system dependencies..."
 if [ "$PKG_MGR" == "dnf" ]; then
-    sudo dnf install -y python3-pip nginx git-core curl policycoreutils-python-utils openssl
+    sudo dnf install -y python3-pip python3-devel nginx git-core curl policycoreutils-python-utils openssl \
+        libX11 libXext libXrender freetype libpng
     sudo systemctl enable --now nginx
     
 
@@ -85,6 +86,11 @@ fi
 echo "🐍 Installing Python packages..."
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt
+ 
+# 3.1 Pre-download Skyfield data files (Critical for servers)
+echo "🛰️ Pre-downloading astronomical data files..."
+./venv/bin/python3 -c "from skyfield.api import load; load('de421.bsp'); load.timescale()"
+sudo chown $CURRENT_USER:$HTTP_GROUP *.bsp *.dat *.tdb *.preds || true
 
 # 4. FIX SELINUX (The Nuclear Way)
 if command -v semanage &> /dev/null; then
