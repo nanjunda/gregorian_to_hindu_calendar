@@ -1,17 +1,18 @@
-# Hindu Panchanga Converter v3.0
+# Hindu Panchanga Converter v4.1 (Universal Context)
 
-A high-precision tool to convert Gregorian calendar dates into traditional Hindu Panchanga elements.
+A high-precision tool to convert **any Gregorian event** into its traditional Vedic equivalent, featuring high-fidelity cosmic visualizations.
 
 ## Features
-- **Version 3.0 (New):**
-    - **Multi-language Support:** English (EN), Kannada (KN), and Sanskrit (SA).
-    - **Nakshatra Padas:** Detailed calculation of the 4 padas for each Nakshatra.
-    - **Cloud Deployment:** Ready-to-use Docker and `deploy.sh` for Linux VMs.
-- **Version 2.0:**
-    - **Vedic Recurrence:** Generate calendar events that recur based on Masa, Paksha, and Tithi.
-    - **iCal Export:** Download a 20-year `.ics` file.
-- **Web UI:** Modern Glassmorphism interface.
-- **High Precision:** Uses `skyfield` (DE440/DE421) and Lahiri Ayanamsha.
+- **Version 4.1 (Universal Context):**
+    - **Hybrid Visualizations:** "Cosmic Alignment" (Heliocentric with Uranus/Neptune) and "Celestial Perspective" (Geocentric with Rahu/Ketu).
+    - **Universal Event Support:** Generic engine designed for Birthdays, Festivals, or historical dates.
+    - **Scientific Bridge:** Visualizes Lunar Nodes (Rahu/Ketu) as mathematical intersection points.
+    - **Privacy First:** "Stealth Mode" generates base64 images, ensuring no user PII is stored on disk.
+- **core Engine:**
+    - **Vedic Recurrence:** Finds "Next Occurrence" for any event based on Masa, Paksha, and Tithi.
+    - **iCal Export:** One-click download for the next 20 occurrences (.ics).
+    - **Precision:** Uses `skyfield` and Lahiri Ayanamsha for sub-arcsecond accuracy.
+- **Web UI:** Premium Glassmorphism interface with "Astronomical Insights" educational section.
 
 ## Installation & Deployment
 
