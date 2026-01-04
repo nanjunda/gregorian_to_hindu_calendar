@@ -61,7 +61,7 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     
-    fig = Figure(figsize=(12.5, 12.5), facecolor='#0a0a0f')
+    fig = Figure(figsize=(15.0, 15.0), facecolor='#0a0a0f')
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111, facecolor='#0a0a0f')
     
@@ -72,7 +72,7 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         ax.add_patch(glow)
     ax.plot(0, 0, 'o', markersize=24, color='#ffcc00', 
             markeredgecolor='#ffffff', markeredgewidth=1.5, label='Sun', zorder=10)
-    ax.text(0, -0.4, 'SUN', color='#ffffff', ha='center', fontsize=11, fontweight='bold')
+    ax.text(0, -0.5, 'SUN', color='#ffffff', ha='center', fontsize=14, fontweight='bold')
 
     # Orbit Radii for visualization
     colors = {
@@ -109,15 +109,16 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         circle = patches.Circle((0, 0), r, color='#444455', fill=False, linestyle='-', alpha=0.2, linewidth=1)
         ax.add_patch(circle)
         
-        # Planet with glow
-        ax.plot(sx, sy, 'o', markersize=14, color=colors[name], 
-                markeredgecolor='#ffffff', markeredgewidth=0.5, zorder=12)
+        # Add Colored Symbol as the Marker (Replacement for circle)
+        ax.text(sx, sy, symbols[name], color=colors[name], ha='center', va='center', 
+                fontsize=24, fontweight='bold', zorder=15)
         
-        # Add Symbol
-        ax.text(sx, sy + 0.25, symbols[name], color='#ffffff', ha='center', va='bottom', fontsize=18, fontweight='bold', zorder=15)
-        
-        # Add Name label - cleaner
-        ax.text(sx, sy - 0.4, name.upper(), color=colors[name], ha='center', va='top', fontsize=9, fontweight='bold', zorder=15)
+        # Add Name label next to symbol - Adaptive offsetting
+        # If planet is on the right half, label to the right. If left, label to the left.
+        ha = 'left' if sx >= 0 else 'right'
+        offset = 0.4 if sx >= 0 else -0.4
+        ax.text(sx + offset, sy, name.upper(), color=colors[name], 
+                ha=ha, va='center', fontsize=14, fontweight='bold', zorder=15)
 
     # Styling
     padding = 1.2
