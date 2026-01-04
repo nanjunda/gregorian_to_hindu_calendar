@@ -148,7 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('res-rashi').textContent = data.rashi.name;
         document.getElementById('res-lagna').textContent = data.lagna.name;
 
-        // Next Birthday (v4.1)
+        // Next Occurrence (v4.1)
+        const eventTitle = document.getElementById('title').value || 'Event';
+        document.getElementById('res-next-occurrence-label').textContent = `✨ Next occurrence as per Hindu Panchanga: ${eventTitle}`;
         document.getElementById('res-next-birthday').textContent = data.next_birthday;
 
         // Simplified educational fact cards
