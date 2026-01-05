@@ -50,8 +50,8 @@
         scene.fog = new THREE.FogExp2(0x000000, 0.002);
 
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 50, 100);
-        camera.lookAt(0, 20, 0);
+        camera.position.set(0, 10, 100); // Lowered camera to see cone from below
+        camera.lookAt(0, 30, 0); // Look higher up at the cone
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -190,7 +190,8 @@
         });
 
         // Animation Loop
-        let wobbleAngle = 0;
+        // Set initial angle to Math.PI to align with Polaris (Start Position)
+        let wobbleAngle = Math.PI;
         function animate() {
             requestAnimationFrame(animate);
 
