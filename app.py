@@ -304,5 +304,19 @@ def lunar_nodes_visual():
     """
     return render_template('lunar_nodes_visual.html')
 
+@app.route('/visuals/zodiac')
+def zodiac_visual():
+    """
+    Serve the 3D Zodiac Stadium visualization.
+    """
+    return render_template('zodiac_visual.html')
+
+@app.route('/visuals/precession')
+def precession_visual():
+    """
+    Serve the 3D Precession visualization.
+    """
+    return render_template('precession_visual.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5080, debug=True)

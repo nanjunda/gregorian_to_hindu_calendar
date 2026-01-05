@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Zodiac Stadium</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #aaa;
+            font-size: 12px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="info">
+        <h3 style="margin:0 0 5px 0; color:#ffcc00;">The Zodiac Stadium</h3>
+        <small>Outer Ring = Zodiac Signs (Fixed Stars)<br>Inner Rings = Planetary Orbits</small>
+    </div>
+    <div id="controls">Drag to rotate • Scroll to zoom • Watch the planets race!</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.001);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 400, 600);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const sunLight = new THREE.PointLight(0xffaa00, 2, 1000);
+        scene.add(sunLight);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // Sun
+        const sunGeo = new THREE.SphereGeometry(30, 32, 32);
+        const sunMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+        const sun = new THREE.Mesh(sunGeo, sunMat);
+        scene.add(sun);
+        // Sun Glow
+        const glowGeo = new THREE.SphereGeometry(32, 32, 32);
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.3 });
+        scene.add(new THREE.Mesh(glowGeo, glowMat));
+
+        // Zodiac Stadium Wall (The "Highway")
+        const stadiumRadius = 450;
+        const stadiumHeight = 60;
+        const signColors = [
+            0xFF5733, 0xFFBD33, 0xDBFF33, 0x75FF33, // Fire/Earth/Air/Water hues
+            0x33FF57, 0x33FFBD, 0x33DBFF, 0x3375FF,
+            0x5733FF, 0xBD33FF, 0xFF33DB, 0xFF3375
+        ];
+        const signNames = ["ARIES", "TAURUS", "GEMINI", "CANCER", "LEO", "VIRGO", "LIBRA", "SCORPIO", "SAGIT.", "CAPRI.", "AQUAR.", "PISCES"];
+
+        // Create 12 segments
+        const segmentAngle = (Math.PI * 2) / 12;
+        signNames.forEach((name, i) => {
+            const angle = i * segmentAngle;
+
+            // Wall Segment
+            const geo = new THREE.CylinderGeometry(stadiumRadius, stadiumRadius, stadiumHeight, 32, 1, true, angle, segmentAngle);
+            const mat = new THREE.MeshBasicMaterial({
+                color: signColors[i],
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.3,
+                wireframe: false
+            });
+            const wall = new THREE.Mesh(geo, mat);
+            scene.add(wall);
+
+            // Wireframe border
+            const edges = new THREE.EdgesGeometry(geo);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: signColors[i] }));
+            scene.add(line);
+
+            // Note: TextGeometry requires font loading which is complex for a simple single-file demo. 
+            // We use simple colored blocks to represent the signs purely visually.
+        });
+
+        // Planets
+        const planets = [];
+        const createPlanet = (r, color, speed, size) => {
+            // Track Ring
+            const trackGeo = new THREE.RingGeometry(r - 0.5, r + 0.5, 64);
+            const trackMat = new THREE.MeshBasicMaterial({ color: 0x333333, side: THREE.DoubleSide });
+            const track = new THREE.Mesh(trackGeo, trackMat);
+            track.rotation.x = Math.PI / 2;
+            scene.add(track);
+
+            // Planet Body
+            const bodyGeo = new THREE.SphereGeometry(size, 16, 16);
+            const bodyMat = new THREE.MeshPhongMaterial({ color: color });
+            const mesh = new THREE.Mesh(bodyGeo, bodyMat);
+            scene.add(mesh);
+
+            planets.push({ mesh: mesh, r: r, speed: speed, angle: Math.random() * Math.PI * 2 });
+        };
+
+        createPlanet(80, 0xaaaaaa, 0.04, 4);   // Mercury
+        createPlanet(120, 0xffcc00, 0.03, 8);  // Venus
+        createPlanet(170, 0x2233ff, 0.02, 9);  // Earth
+        createPlanet(220, 0xff3333, 0.015, 7); // Mars
+        createPlanet(300, 0xd4a017, 0.008, 18); // Jupiter
+
+        // User Controls
+        let isDragging = false;
+        let prevX = 0, prevY = 0;
+        let camTheta = 0, camPhi = 1.0;
+        const camRadius = 600;
+
+        document.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const dx = (e.clientX - prevX) * 0.005;
+            const dy = (e.clientY - prevY) * 0.005;
+            scene.rotation.y += dx;
+            scene.rotation.x += dy;
+            prevX = e.clientX; prevY = e.clientY;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            planets.forEach(p => {
+                p.angle += p.speed;
+                p.mesh.position.x = Math.cos(p.angle) * p.r;
+                p.mesh.position.z = Math.sin(p.angle) * p.r;
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>

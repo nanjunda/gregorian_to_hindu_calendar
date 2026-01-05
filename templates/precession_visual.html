@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precession: The Cosmic Top</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #aaa;
+            font-size: 12px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="info">
+        <h3 style="margin:0 0 5px 0; color:#4fc3f7;">The Great Wobble</h3>
+        <small>Earth spins like a top.<br>The axis traces a circle every 26,000 years.</small>
+    </div>
+    <div id="controls">Drag to rotate • Watch the white axis pointer!</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 30, 80);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+        sunLight.position.set(50, 20, 50);
+        scene.add(sunLight);
+        scene.add(new THREE.AmbientLight(0x333333));
+
+        // Group to hold Earth + Axis (the "Top")
+        const earthGroup = new THREE.Group();
+        scene.add(earthGroup);
+
+        // Earth
+        const earthGeo = new THREE.SphereGeometry(10, 32, 32);
+        const earthMat = new THREE.MeshPhongMaterial({
+            color: 0x2233ff,
+            emissive: 0x112244,
+            specular: 0x111111,
+            shininess: 10,
+            wireframe: true
+        });
+        const earth = new THREE.Mesh(earthGeo, earthMat);
+        earthGroup.add(earth);
+
+        // Axis Line (The Poker)
+        const axisGeo = new THREE.CylinderGeometry(0.2, 0.2, 40, 8);
+        const axisMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const axis = new THREE.Mesh(axisGeo, axisMat);
+        axis.position.y = 10; // Shift up so center is earth
+        earthGroup.add(axis);
+
+        // The "Cone of Time" (Trace path)
+        const coneHeight = 20;
+        const coneRadius = Math.tan(23.5 * Math.PI / 180) * coneHeight;
+        // We simulate the path visually with a ring above
+        const pathGeo = new THREE.RingGeometry(7.5, 8, 32);
+        const pathMat = new THREE.MeshBasicMaterial({ color: 0x4fc3f7, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+        const path = new THREE.Mesh(pathGeo, pathMat);
+        path.rotation.x = Math.PI / 2;
+        path.position.y = 28; // Above earth
+        scene.add(path);
+
+        // Star Markers
+        const createStar = (angle, label) => {
+            const r = 7.75;
+            const x = Math.cos(angle) * r;
+            const z = Math.sin(angle) * r;
+            const geo = new THREE.SphereGeometry(0.5);
+            const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, 28, z);
+            scene.add(mesh);
+            // Label would be sprite, skipping for simplicity
+        };
+        createStar(0, "Vega");
+        createStar(Math.PI, "Polaris");
+
+        // Interaction
+        let isDragging = false;
+        let prevX = 0, prevY = 0;
+        document.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+        document.addEventListener('mouseup', () => isDragging = false);
+        document.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const dx = (e.clientX - prevX) * 0.01;
+            scene.rotation.y += dx;
+            prevX = e.clientX;
+        });
+
+        // Animation Loop
+        let wobbleAngle = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. Earth Spins (Fast)
+            earth.rotation.y += 0.05;
+
+            // 2. Axis Wobbles (Slow)
+            wobbleAngle += 0.005;
+            // The tilt is 23.5 deg (approx 0.41 rad)
+            // We rotate the GROUP to mimic precession
+            earthGroup.rotation.x = 0.41 * Math.cos(wobbleAngle);
+            earthGroup.rotation.z = 0.41 * Math.sin(wobbleAngle);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
