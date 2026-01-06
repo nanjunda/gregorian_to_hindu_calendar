@@ -210,7 +210,31 @@
                 defaultDate: new Date(),
                 monthSelectorType: "dropdown",
                 theme: "dark",
-                animate: true
+                animate: true,
+                onReady: function (selectedDates, dateStr, instance) {
+                    const yearInput = instance.calendarContainer.querySelector(".numInput.cur-year");
+                    if (yearInput) {
+                        const yearSelect = document.createElement("select");
+                        yearSelect.className = "flatpickr-year-select";
+                        for (let y = 1900; y <= 2100; y++) {
+                            const opt = document.createElement("option");
+                            opt.value = y;
+                            opt.text = y;
+                            if (y === instance.currentYear) opt.selected = true;
+                            yearSelect.appendChild(opt);
+                        }
+                        yearInput.parentNode.replaceChild(yearSelect, yearInput);
+                        yearSelect.addEventListener("change", (e) => {
+                            instance.changeYear(parseInt(e.target.value));
+                        });
+                        instance.yearSelect = yearSelect;
+                    }
+                },
+                onYearChange: function (selectedDates, dateStr, instance) {
+                    if (instance.yearSelect) {
+                        instance.yearSelect.value = instance.currentYear;
+                    }
+                }
             });
         });
     </script>
