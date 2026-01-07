@@ -44,13 +44,17 @@ class GeminiEngine(BaseAIEngine):
         tithi = config_data.get('tithi')
         nakshatra = config_data.get('nakshatra')
         yoga = config_data.get('yoga')
-        karana = config_data.get('karana')
         location = config_data.get('address')
         input_dt = config_data.get('input_datetime')
-        rashi = config_data.get('rashi', {}).get('name', 'N/A')
+        
+        # Defensive extraction for rashi (it might be None or missing)
+        rashi_obj = config_data.get('rashi')
+        rashi = "N/A"
+        if isinstance(rashi_obj, dict):
+            rashi = rashi_obj.get('name', 'N/A')
         
         # Ayanamsa is usually around 24 degrees in this era
-        ayanamsa = "approx. 24.1°" 
+        ayanamsa = "approx. 24.1°"
         
         # Split datetime if possible for cleaner prompt
         date_part, time_part = "N/A", "N/A"

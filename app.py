@@ -336,10 +336,14 @@ def ai_explain():
             "insight": insight
         })
     except Exception as e:
-        print(f"CRITICAL: /api/ai-explain failed: {str(e)}")
         import traceback
+        error_details = f"{type(e).__name__}: {str(e)}"
+        print(f"CRITICAL: /api/ai-explain failed: {error_details}")
         traceback.print_exc()
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({
+            "success": False, 
+            "error": f"Server Error: {error_details}. Check logs for traceback."
+        }), 500
 
 @app.route('/insights', methods=['GET', 'POST'], strict_slashes=False)
 def insights_page():
