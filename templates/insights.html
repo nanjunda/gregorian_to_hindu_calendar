@@ -184,19 +184,23 @@
                 const renderTags = {
                     'ZODIAC_COMPARISON': {
                         url: '/visuals/zodiac-comparison',
-                        caption: '3D Adaptive Zodiac Ring: Drag to witness the 24° Ayanamsa gap between Modern and Hindu astronomy.'
+                        caption: 'Interactive Zodiac Aligner',
+                        significance: 'This simulation demonstrates the fundamental difference between Modern (Tropical) and Hindu (Sidereal) astronomy. As the Earth wobbles over thousands of years, the seasons (Western signs) shift away from the actual star clusters (Rashis). The current Ayanamsa gap is approximately 24 degrees.'
                     },
                     'MOON_PHASE_3D': {
                         url: '/visuals/moon-phase',
-                        caption: 'Interactive Phase Protractor: Drag the Moon to see how the geometry creates the 30 Tithis.'
+                        caption: 'Tithi Phase Protractor',
+                        significance: 'A Tithi is a specialized unit of time defined as a 12° angular separation between the Sun and the Moon from Earth\'s perspective. This "Phase Protractor" calculates the precise Tithi and Paksha based on that geometric angle.'
                     },
                     'PRECESSION_WOBBLE': {
                         url: '/visuals/precession',
-                        caption: 'Earth\'s Axis Wobble: Visualizing the 25,800-year cycle that shifts our seasonal signs.'
+                        caption: 'The Earth\'s Great Wobble',
+                        significance: 'Earth spins like a wobbling top. This 25,800-year cycle, called Precession, is why the stars appear to shift slowly over centuries, necessitating the Ayanamsa correction in the Panchanga.'
                     },
                     'CONSTELLATION_MAP': {
                         url: '/visuals/constellations',
-                        caption: 'Sky Focus: The current Nakshatra highlight against the fixed background stars.'
+                        caption: 'Sky Focus: Lunar Tracking',
+                        significance: 'The Sky Focus represents the Moon\'s coordinates against the galactic background. While the stars move across the night sky, the Moon physically passes through specific star clusters called Nakshatras. The highlight shows the boundary of the Moon\'s "home" for the next 24 hours.'
                     }
                 };
 
@@ -204,12 +208,16 @@
                     return content.replace(/\[\[RENDER:(.*?)\]\]/g, (match, tagName) => {
                         const tag = renderTags[tagName.trim()];
                         if (tag) {
-                            // We construct a visual block with an iframe pointing to our 3D routes
                             return `
-                                <div class="visual-block card glass">
-                                    <div class="visual-loading">Launching 3D Module...</div>
-                                    <iframe class="visual-iframe" src="${tag.url}?samvatsara=${encodeURIComponent(insightData.samvatsara)}&tithi=${encodeURIComponent(insightData.tithi)}&rashi=${encodeURIComponent(insightData.rashi?.name || 'Leo')}" onload="this.previousElementSibling.style.display='none'"></iframe>
-                                    <div class="visual-caption">🖥️ ${tag.caption}</div>
+                                <div class="visual-block-wrapper" style="margin: 2.5rem 0;">
+                                    <div class="visual-block card glass" style="margin-bottom: 0;">
+                                        <div class="visual-loading">Launching 3D Module...</div>
+                                        <iframe class="visual-iframe" src="${tag.url}?samvatsara=${encodeURIComponent(insightData.samvatsara)}&tithi=${encodeURIComponent(insightData.tithi)}&rashi=${encodeURIComponent(insightData.rashi?.name || 'Leo')}" onload="this.previousElementSibling.style.display='none'"></iframe>
+                                        <div class="visual-caption">🖥️ ${tag.caption}</div>
+                                    </div>
+                                    <div class="visual-significance" style="padding: 1rem; background: rgba(0, 210, 255, 0.05); border-left: 3px solid var(--secondary); font-size: 0.95rem; line-height: 1.6; color: var(--text-white);">
+                                        <strong>Significance:</strong> ${tag.significance}
+                                    </div>
                                 </div>
                             `;
                         }

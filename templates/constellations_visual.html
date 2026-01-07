@@ -101,14 +101,14 @@
         highlight.add(rashiLabel);
 
         // The Moon (Foreground)
-        const moonGeo = new THREE.SphereGeometry(30, 32, 32);
+        const moonGeo = new THREE.SphereGeometry(15, 32, 32); // Reduced from 30
         const moonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const moon = new THREE.Mesh(moonGeo, moonMat);
-        moon.position.set(0, 0, -500); // Between camera and stars
+        moon.position.set(0, 0, -300); // Between camera and stars, slightly closer
         scene.add(moon);
 
         const moonLabel = createLabel('MOON', '#ffffff');
-        moonLabel.position.set(0, 50, 0);
+        moonLabel.position.set(0, 30, 0); // Adjusted height
         moon.add(moonLabel);
 
         // Core interactive rotation
