@@ -154,14 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
             input_datetime: `${document.getElementById('date').value} ${document.getElementById('time').value}`
         }));
 
-        // Handle AI Insight Link
-        const aiLink = document.getElementById('ai-insight-link');
-        if (aiLink) {
-            aiLink.onclick = (e) => {
-                e.preventDefault();
-                window.location.href = '/insights';
-            };
-        }
+        // Handle AI Insight Link (Now via direct href, but we still ensure data is saved)
+        // localStorage is already updated above.
 
         // Next Occurrence (v4.1)
         const eventTitle = document.getElementById('title').value || 'Event';
