@@ -65,14 +65,51 @@
         const starField = new THREE.Points(starGeo, starMat);
         scene.add(starField);
 
-        // Target Highlight
-        const highlightGeo = new THREE.SphereGeometry(100, 32, 32);
-        const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.2, wireframe: true });
+        // Helper for 3D Labels
+        function createLabel(text, color) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 256; canvas.height = 64;
+            ctx.fillStyle = color; ctx.font = 'bold 32px Inter, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, 128, 44);
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.SpriteMaterial({ map: tex });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(150, 40, 1);
+            return sprite;
+        }
+
+        // Target Highlight (Rashi/Nakshatra area)
+        const highlightGeo = new THREE.SphereGeometry(150, 32, 32);
+        const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.15, wireframe: true });
         const highlight = new THREE.Mesh(highlightGeo, highlightMat);
+
         // Randomly place it based on a "hash" of the rashi name for demo
         const hash = rashi.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-        highlight.position.set(Math.cos(hash) * 1000, Math.sin(hash) * 1000, -1500);
-        scene.add(highlight);
+        const hX = Math.cos(hash) * 1500;
+        const hY = Math.sin(hash) * 1500;
+        const hZ = -1800;
+        highlight.position.set(hX, hY, hZ);
+
+        // CRITICAL FIX: Parent the highlight to the starfield so they rotate together
+        starField.add(highlight);
+
+        // Add Label to Highlight
+        const rashiLabel = createLabel(rashi.toUpperCase(), '#ffcc00');
+        rashiLabel.position.set(0, 180, 0); // Position relative to highlight center
+        highlight.add(rashiLabel);
+
+        // The Moon (Foreground)
+        const moonGeo = new THREE.SphereGeometry(30, 32, 32);
+        const moonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const moon = new THREE.Mesh(moonGeo, moonMat);
+        moon.position.set(0, 0, -500); // Between camera and stars
+        scene.add(moon);
+
+        const moonLabel = createLabel('MOON', '#ffffff');
+        moonLabel.position.set(0, 50, 0);
+        moon.add(moonLabel);
 
         // Core interactive rotation
         let mouseX = 0, mouseY = 0;
