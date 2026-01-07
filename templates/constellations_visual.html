@@ -51,124 +51,82 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Starfield
-        const starGeo = new THREE.BufferGeometry();
-        const starCoords = [];
-        for (let i = 0; i < 3000; i++) {
-            const x = THREE.MathUtils.randFloatSpread(4000);
-            const y = THREE.MathUtils.randFloatSpread(4000);
-            const z = THREE.MathUtils.randFloatSpread(4000);
-            starCoords.push(x, y, z);
+        const textureLoader = new THREE.TextureLoader();
+        const zodiacTexture = textureLoader.load('/static/images/zodiac_map.jpg');
+
+        // Background Plane (The Map)
+        const bgGeo = new THREE.PlaneGeometry(3000, 1000);
+        const bgMat = new THREE.MeshBasicMaterial({ map: zodiacTexture, transparent: true });
+        const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+        bgMesh.position.z = -1000;
+        scene.add(bgMesh);
+
+        // Hindu Rashi to Modern Constellation Mapping
+        const rashiMap = {
+            'Mesha': { name: 'Aries', idx: 0 },
+            'Vrishabha': { name: 'Taurus', idx: 1 },
+            'Mithuna': { name: 'Gemini', idx: 2 },
+            'Kataka': { name: 'Cancer', idx: 3 },
+            'Simha': { name: 'Leo', idx: 4 },
+            'Kanya': { name: 'Virgo', idx: 5 },
+            'Tula': { name: 'Libra', idx: 6 },
+            'Vrishchika': { name: 'Scorpio', idx: 7 },
+            'Dhanus': { name: 'Sagittarius', idx: 8 },
+            'Makara': { name: 'Capricorn', idx: 9 },
+            'Kumbha': { name: 'Aquarius', idx: 10 },
+            'Meena': { name: 'Pisces', idx: 11 }
+        };
+
+        const cleanRashi = rashi.split(' (')[0].trim();
+        const rashiInfo = rashiMap[cleanRashi] || { name: 'Unknown', idx: 4 }; // Default Leo
+        const modernName = rashiInfo.name;
+
+        // Pan map based on Rashi index (Mesha=0 is far left, Meena=11 is far right)
+        // Map width is 3000, so each sign is 250 wide. 
+        // We want Mesha (idx 0) to be at the center (x=0)? 
+        // If Mesha is at the far left of the image, we shift image to the RIGHT.
+        const rashiWidth = 3000 / 12;
+        const startX = 1500 - (rashiWidth / 2); // Far Left segment center
+        bgMesh.position.x = startX - (rashiInfo.idx * rashiWidth);
+
+        let displayLabel = rashi;
+        if (modernName && !rashi.includes(`(${modernName})`)) {
+            displayLabel = `${cleanRashi} (${modernName})`;
         }
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
-        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2 });
-        const starField = new THREE.Points(starGeo, starMat);
-        scene.add(starField);
+        document.getElementById('rashi-name').innerText = displayLabel;
 
         // Helper for 3D Labels
         function createLabel(text, color) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = 256; canvas.height = 64;
-            ctx.fillStyle = color; ctx.font = 'bold 32px Inter, Arial';
+            canvas.width = 512; canvas.height = 128;
+            ctx.fillStyle = color; ctx.font = 'bold 48px Inter, Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(text, 128, 44);
+            ctx.fillText(text, 256, 80);
             const tex = new THREE.CanvasTexture(canvas);
             const mat = new THREE.SpriteMaterial({ map: tex });
             const sprite = new THREE.Sprite(mat);
-            sprite.scale.set(150, 40, 1);
+            sprite.scale.set(300, 75, 1);
             return sprite;
         }
 
-        // Target Highlight (Rashi/Nakshatra area)
-        const highlightGeo = new THREE.SphereGeometry(150, 32, 32);
-        const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.15, wireframe: true });
-        const highlight = new THREE.Mesh(highlightGeo, highlightMat);
-
-        // Randomly place it based on a "hash" of the rashi name for demo
-        const hash = rashi.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-        const hX = Math.cos(hash) * 1500;
-        const hY = Math.sin(hash) * 1500;
-        const hZ = -1800;
-        highlight.position.set(hX, hY, hZ);
-
-        // CRITICAL FIX: Parent the highlight to the starfield so they rotate together
-        starField.add(highlight);
-
-        // Hindu Rashi to Modern Constellation Mapping
-        const rashiMap = {
-            'Mesha': 'Aries',
-            'Vrishabha': 'Taurus',
-            'Mithuna': 'Gemini',
-            'Kataka': 'Cancer',
-            'Simha': 'Leo',
-            'Kanya': 'Virgo',
-            'Tula': 'Libra',
-            'Vrishchika': 'Scorpio',
-            'Dhanus': 'Sagittarius',
-            'Makara': 'Capricorn',
-            'Kumbha': 'Aquarius',
-            'Meena': 'Pisces'
-        };
-
-        const modernName = rashiMap[rashi] || 'Unknown';
-        document.getElementById('rashi-name').innerText = `${rashi} (${modernName})`;
-
-        // Add Label to Highlight
-        const rashiLabel = createLabel(`${rashi.toUpperCase()} / ${modernName.toUpperCase()}`, '#ffcc00');
-        rashiLabel.position.set(0, 180, 0); // Position relative to highlight center
-        highlight.add(rashiLabel);
-
-        // --- CONSTELLATION OUTLINES (V5.1 Enhancement) ---
-        // We find stars near our highlight and connect them to simulate a pattern
-        const constellationLines = new THREE.Group();
-        highlight.add(constellationLines);
-
-        const localHighlightPos = highlight.position.clone();
-        const nearbyStars = [];
-        const posAttr = starGeo.attributes.position;
-
-        for (let i = 0; i < posAttr.count; i++) {
-            const sx = posAttr.getX(i);
-            const sy = posAttr.getY(i);
-            const sz = posAttr.getZ(i);
-            const dist = Math.sqrt(
-                Math.pow(sx - hX, 2) +
-                Math.pow(sy - hY, 2) +
-                Math.pow(sz - hZ, 2)
-            );
-            if (dist < 150) { // Same as highlight radius
-                // Convert back to local highlight coordinates
-                nearbyStars.push(new THREE.Vector3(sx - hX, sy - hY, sz - hZ));
-            }
-        }
-
-        // Draw connecting lines between nearby stars
-        if (nearbyStars.length > 2) {
-            const lineMat = new THREE.LineBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.4 });
-            // Simple logic: connect star i to i+1 and a few random ones
-            for (let i = 0; i < nearbyStars.length - 1; i++) {
-                if (Math.random() > 0.3) {
-                    const lGeo = new THREE.BufferGeometry().setFromPoints([nearbyStars[i], nearbyStars[i + 1]]);
-                    const constellationLine = new THREE.Line(lGeo, lineMat);
-                    constellationLines.add(constellationLine);
-                }
-            }
-        }
-        // --- END CONSTELLATION OUTLINES ---
+        // Add Label directly to Sky
+        const rashiLabel = createLabel(displayLabel.toUpperCase(), '#ffcc00');
+        rashiLabel.position.set(0, 150, -500);
+        scene.add(rashiLabel);
 
         // The Moon (Foreground)
-        const moonGeo = new THREE.SphereGeometry(15, 32, 32); // Reduced from 30
+        const moonGeo = new THREE.SphereGeometry(8, 32, 32); // even smaller
         const moonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const moon = new THREE.Mesh(moonGeo, moonMat);
-        moon.position.set(0, 0, -300); // Between camera and stars, slightly closer
+        moon.position.set(0, 0, -200);
         scene.add(moon);
 
         const moonLabel = createLabel('MOON', '#ffffff');
-        moonLabel.position.set(0, 30, 0); // Adjusted height
+        moonLabel.position.set(0, 25, 0);
         moon.add(moonLabel);
 
-        // Core interactive rotation
+        // Core interactive rotation (subtle)
         let mouseX = 0, mouseY = 0;
         window.addEventListener('mousemove', (e) => {
             mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
@@ -177,9 +135,8 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            starField.rotation.y += 0.0005;
-            camera.rotation.y += (mouseX * 0.001 - camera.rotation.y) * 0.05;
-            camera.rotation.x += (mouseY * 0.001 - camera.rotation.x) * 0.05;
+            camera.rotation.y += (mouseX * 0.0001 - camera.rotation.y) * 0.02;
+            camera.rotation.x += (mouseY * 0.0001 - camera.rotation.x) * 0.02;
             renderer.render(scene, camera);
         }
         animate();
