@@ -23,31 +23,66 @@ class GeminiEngine(BaseAIEngine):
         if not self.model:
             return "AI Engine not configured. Please set GOOGLE_API_KEY environment variable."
 
-        prompt = f"""
-        You are a cross-disciplinary expert: a Classical Astronomer, a Modern Astrophysicist, and a cultural Storyteller.
-        Explain the following **Astronomical Configuration** for a student of the Hindu Panchanga:
+        # Extracting data for the prompt
+        samvatsara = config_data.get('samvatsara')
+        masa = config_data.get('masa')
+        paksha = config_data.get('paksha')
+        tithi = config_data.get('tithi')
+        nakshatra = config_data.get('nakshatra')
+        yoga = config_data.get('yoga')
+        karana = config_data.get('karana')
+        location = config_data.get('address')
+        input_dt = config_data.get('input_datetime')
         
-        SAMVATSARA: {config_data.get('samvatsara')}
-        MASA: {config_data.get('masa')}
-        PAKSHA: {config_data.get('paksha')}
-        TITHI: {config_data.get('tithi')}
-        NAKSHATRA: {config_data.get('nakshatra')}
-        YOGA: {config_data.get('yoga')}
-        KARANA: {config_data.get('karana')}
-        LOCATION: {config_data.get('address')}
-        TIME: {config_data.get('input_datetime')}
+        # Split datetime if possible for cleaner prompt
+        date_part, time_part = "N/A", "N/A"
+        if input_dt and ' ' in input_dt:
+            date_part, time_part = input_dt.split(' ', 1)
+        elif input_dt:
+            date_part = input_dt
 
-        Please provide your insight in three parts:
+        prompt = f"""
+        Role: The "Astro-Tutor" (An expert in Astronomy, Math, and Mythology who speaks the language of middle and high school students).
 
-        1. **The Astronomer's Perspective**: Explain the precise relative positions of the Sun, Moon, and Earth that create this configuration. Use scientific terms like 'elongation', 'sidereal', and 'precession' where appropriate.
-        2. **The Physicist's Note**: Explain the underlying physical mechanics—why the orbital periods lead to these cycles (like the **jovian** period for Samvatsara) and how we define the **epoch** of this measurement. 
-        3. **The Sage's Tale**: Connect these mechanics to Indian mythology or symbolic lore. Bridge the two worlds by explaining how the myth might be a poetic representation of the actual astronomical event.
+        Objective:
+        Generate a comprehensive Panchanga report for this specific moment. Bridge the gap between Ancient Indian Astronomy and Modern Science. Retain high-level technical details but explain them using relatable analogies (geometry, sports, clockwork, coding).
 
-        **Constraints**:
-        - Use the term 'Panchanga' instead of 'Vedic'.
-        - Ensure the tone is educational and engaging for a student.
-        - Naturally include terms like 'jovian', 'epoch', 'precession', and 'sidereal' so our interactive glossary can highlight them.
-        - Use Markdown formatting for a premium reading experience.
+        Input Data:
+        - Date: {date_part}
+        - Time: {time_part}
+        - Location: {location}
+        - Samvatsara: {samvatsara}
+        - Masa: {masa}
+        - Paksha: {paksha}
+        - Tithi: {tithi}
+        - Nakshatra: {nakshatra}
+        - Yoga: {yoga}
+        - Karana: {karana}
+
+        Instructions for Output Structure:
+
+        1. Introduction: The "Time-Keeping" Engine
+        - Explain what a calendar actually is.
+        - Introduce the Western (Solar) vs. Hindu Panchanga (Lunisolar) systems.
+
+        2. The Code: Western vs. Hindu Systems
+        - Highlight differences: Tropical Zodiac (Western/Seasons) vs. Sidereal Zodiac (Hindu/Fixed Stars).
+        - Explain the "Start of Day" (Midnight vs. Sunrise).
+
+        3. The "Birthday Algorithm" (The 11-Day Gap)
+        - Explain why an Indian birthday differs from a Western birthday.
+        - Show the math: Solar Year (365.25 days) - Lunar Year (354 days) = ~11 days difference.
+        - Explain the "drift" and how Adhika Masa (Leap Month) fixed it.
+
+        4. The Deep Dive (The Result Analysis)
+        - Section A: The Astronomer’s Snapshot (Geometry) -> Explain Tithi (Angle), Nakshatra (Coordinates/Star), Yoga, and Karana using the input data above.
+        - Section B: The Physicist’s Lab (Mechanics) -> Explain Orbital Periods (Synodic vs. Sidereal) and Precession.
+        - Section C: The Storyteller’s Archive (Myth) -> Connect the astronomy to the mythology (Deities, Vibes, Stories) for these specific results.
+
+        5. The Cosmic Cheat Sheet (Vocabulary)
+        - Define: Equinox, Precession, and Epoch using simple analogies (spinning tops, video game save points, seesaws).
+
+        Tone: Encouraging, precise, visual, and educational. Use Markdown formatting. Use the term 'Panchanga' instead of 'Vedic'.
         """
         
         try:
