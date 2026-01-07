@@ -81,63 +81,82 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const insightData = JSON.parse(localStorage.getItem('lastPanchangaResult'));
-            const display = document.getElementById('insight-display');
-            const loader = document.getElementById('loading-insights');
-            const configTitle = document.getElementById('config-title');
+            console.log("Insights page initialized.");
 
-            if (!insightData) {
-                display.innerHTML = "<p>No configuration data found. Please go back and run a conversion first.</p>";
-                display.classList.remove('hidden');
-                loader.classList.add('hidden');
-                return;
+            // Priority 1: Data passed directly from server (v5.0 robust delivery)
+            let insightData = {% if initial_data %}{{ initial_data| tojson | safe }}{% else %}null{% endif %};
+
+        // Priority 2: Fallback to storage if page was refreshed or direct access
+        if (!insightData) {
+            console.log("No server-side data found, checking local storage...");
+            const rawData = localStorage.getItem('lastPanchangaResult') || sessionStorage.getItem('lastPanchangaResult');
+            if (rawData) {
+                try { insightData = JSON.parse(rawData); } catch (e) { }
             }
+        }
 
-            configTitle.textContent = `${insightData.masa} ${insightData.samvatsara} | ${insightData.tithi}`;
+        const display = document.getElementById('insight-display');
+        const loader = document.getElementById('loading-insights');
+        const configTitle = document.getElementById('config-title');
 
-            try {
-                const response = await fetch('/api/ai-explain', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(insightData)
-                });
+        if (!insightData) {
+            display.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="color: var(--secondary); font-weight: bold; font-size: 1.2rem;">⚠️ Astronomical Configuration Missing</p>
+                        <p>The Wisdom Engine needs a specific moment in time to explain.</p>
+                        <p style="margin-top: 1rem;"><strong>Please go back, run a conversion, then click Explore Insights.</strong></p>
+                    </div>
+                `;
+            display.classList.remove('hidden');
+            loader.classList.add('hidden');
+            return;
+        }
 
-                const result = await response.json();
+        configTitle.textContent = `${insightData.masa} ${insightData.samvatsara} | ${insightData.tithi}`;
 
-                if (result.success) {
-                    let htmlContent = marked.parse(result.insight);
+        try {
+            const response = await fetch('/api/ai-explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(insightData)
+            });
 
-                    // Apply Interactive Glossary (v5.0)
-                    const glossary = {
-                        'epoch': 'A fixed point in time used as a reference point for calculating astronomical events or calendar dates.',
-                        'jovian': 'Relating to the planet Jupiter. In Panchanga, the Samvatsara cycle is based on Jupiter\'s orbital period.',
-                        'precession': 'The slow, conical motion of Earth\'s axis, which causes the position of the stars to appear to shift.',
-                        'sidereal': 'Measured relative to the distant stars, rather than the Sun.',
-                        'ayanamsha': 'The angular difference between the Tropical (fixed seasons) and Sidereal (fixed stars) zodiacs.',
-                        'solstice': 'The time when the Sun reaches its highest or lowest point in the sky at noon.',
-                        'equinox': 'The time when day and night are of approximately equal length.'
-                    };
+            const result = await response.json();
 
-                    for (const [term, definition] of Object.entries(glossary)) {
-                        const regex = new RegExp(`\\b${term}\\b`, 'gi');
-                        htmlContent = htmlContent.replace(regex, (match) => {
-                            return `<span class="highlight-term">${match}<span class="tooltip-bubble">${definition}</span></span>`;
-                        });
-                    }
+            if (result.success) {
+                let htmlContent = marked.parse(result.insight);
 
-                    display.innerHTML = htmlContent;
-                    display.classList.remove('hidden');
-                    loader.classList.add('hidden');
-                } else {
-                    display.innerHTML = `<p>Error generating insights: ${result.error}</p>`;
-                    display.classList.remove('hidden');
-                    loader.classList.add('hidden');
+                // Apply Interactive Glossary (v5.0)
+                const glossary = {
+                    'epoch': 'A fixed point in time used as a reference point for calculating astronomical events or calendar dates.',
+                    'jovian': 'Relating to the planet Jupiter. In Panchanga, the Samvatsara cycle is based on Jupiter\'s orbital period.',
+                    'precession': 'The slow, conical motion of Earth\'s axis, which causes the position of the stars to appear to shift.',
+                    'sidereal': 'Measured relative to the distant stars, rather than the Sun.',
+                    'ayanamsha': 'The angular difference between the Tropical (fixed seasons) and Sidereal (fixed stars) zodiacs.',
+                    'solstice': 'The time when the Sun reaches its highest or lowest point in the sky at noon.',
+                    'equinox': 'The time when day and night are of approximately equal length.'
+                };
+
+                for (const [term, definition] of Object.entries(glossary)) {
+                    const regex = new RegExp(`\\b${term}\\b`, 'gi');
+                    htmlContent = htmlContent.replace(regex, (match) => {
+                        return `<span class="highlight-term">${match}<span class="tooltip-bubble">${definition}</span></span>`;
+                    });
                 }
-            } catch (error) {
-                display.innerHTML = "<p>Failed to connect to the Wisdom Engine. Please try again later.</p>";
+
+                display.innerHTML = htmlContent;
+                display.classList.remove('hidden');
+                loader.classList.add('hidden');
+            } else {
+                display.innerHTML = `<p>Error generating insights: ${result.error}</p>`;
                 display.classList.remove('hidden');
                 loader.classList.add('hidden');
             }
+        } catch (error) {
+            display.innerHTML = "<p>Failed to connect to the Wisdom Engine. Please try again later.</p>";
+            display.classList.remove('hidden');
+            loader.classList.add('hidden');
+        }
         });
     </script>
 </body>

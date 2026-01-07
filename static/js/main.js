@@ -148,14 +148,41 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('res-rashi').textContent = data.rashi.name;
         document.getElementById('res-lagna').textContent = data.lagna.name;
 
-        // Persist data for AI insights page
-        localStorage.setItem('lastPanchangaResult', JSON.stringify({
-            ...data,
-            input_datetime: `${document.getElementById('date').value} ${document.getElementById('time').value}`
-        }));
+        // Persist data for AI insights page (v5.0)
+        try {
+            const insightData = {
+                ...data,
+                input_datetime: `${document.getElementById('date').value} ${document.getElementById('time').value}`
+            };
+            const dataStr = JSON.stringify(insightData);
+            localStorage.setItem('lastPanchangaResult', dataStr);
+            sessionStorage.setItem('lastPanchangaResult', dataStr); // Dual storage for robustness
+            console.log("Panchanga results persisted for AI insights.");
+        } catch (e) {
+            console.warn("Storage warning (v5.0): Could not persist data for AI insights.", e);
+        }
 
-        // Handle AI Insight Link (Now via direct href, but we still ensure data is saved)
-        // localStorage is already updated above.
+        // Handle AI Insight Link (v5.0 robust delivery via Hidden Form)
+        const aiLink = document.getElementById('ai-insight-link');
+        if (aiLink) {
+            aiLink.onclick = (e) => {
+                e.preventDefault();
+
+                // Create a hidden form to POST the data
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/insights';
+
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'panchanga_data';
+                hiddenInput.value = localStorage.getItem('lastPanchangaResult');
+
+                form.appendChild(hiddenInput);
+                document.body.appendChild(form);
+                form.submit();
+            };
+        }
 
         // Next Occurrence (v4.1)
         const eventTitle = document.getElementById('title').value || 'Event';

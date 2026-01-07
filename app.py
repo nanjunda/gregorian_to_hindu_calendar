@@ -335,12 +335,26 @@ def ai_explain():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/insights')
+@app.route('/insights', methods=['GET', 'POST'])
 def insights_page():
     """
-    Serve the deep insights page.
+    Serve the deep insights page. Can receive configuration via POST for reliability.
     """
-    return render_template('insights.html')
+    data = None
+    if request.method == 'POST':
+        try:
+            # Check if it's a form or JSON
+            if request.is_json:
+                data = request.json
+            else:
+                import json
+                data_str = request.form.get('panchanga_data')
+                if data_str:
+                    data = json.loads(data_str)
+        except Exception as e:
+            print(f"Error parsing insights POST data: {e}")
+    
+    return render_template('insights.html', initial_data=data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5080, debug=True)
