@@ -22,6 +22,9 @@ class GeminiEngine(BaseAIEngine):
     def generate_insight(self, config_data):
         if not self.model:
             return "AI Engine not configured. Please set GOOGLE_API_KEY environment variable."
+            
+        if not config_data:
+            return "Error: No astronomical configuration data provided to the AI Engine."
 
         # Extracting data for the prompt
         samvatsara = config_data.get('samvatsara')

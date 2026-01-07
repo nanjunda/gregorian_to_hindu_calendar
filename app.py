@@ -325,7 +325,10 @@ def ai_explain():
     Generate AI-powered insights for the given astronomical configuration.
     """
     try:
-        data = request.json
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "No data received in request."}), 400
+            
         # The frontend will send the full result data object
         insight = ai_engine.get_explanation(data)
         return jsonify({
@@ -333,9 +336,12 @@ def ai_explain():
             "insight": insight
         })
     except Exception as e:
+        print(f"CRITICAL: /api/ai-explain failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/insights', methods=['GET', 'POST'])
+@app.route('/insights', methods=['GET', 'POST'], strict_slashes=False)
 def insights_page():
     """
     Serve the deep insights page. Can receive configuration via POST for reliability.
