@@ -54,12 +54,20 @@ class GeminiEngine(BaseAIEngine):
             response = self.model.generate_content(prompt)
             return response.text
         except Exception as e:
-            # Multi-stage Fallback (v5.0 robustness)
-            # 1. Try 'gemini-2.5-flash-latest'
-            # 2. Try 'gemini-1.5-flash' as a last resort
-            fallback_models = ['gemini-2.5-flash-latest', 'gemini-1.5-flash']
+            # Multi-stage Fallback (v5.0 robustness for 2026)
+            # We try the newest models first, cascading down to legacy versions.
+            fallback_models = [
+                'gemini-3-flash',        # Latest 2026 model
+                'gemini-2.5-flash',      # High-performance 2025/26 stable
+                'gemini-2.5-flash-latest', 
+                'gemini-2.0-flash',      # Stable 2.0 release
+                'gemini-1.5-flash'       # Legacy safety net
+            ]
             
             for fallback_name in fallback_models:
+                if fallback_name == self.model_name:
+                    continue
+                    
                 try:
                     print(f"Model {self.model_name} failed. Attempting fallback to {fallback_name}...")
                     fallback_model = genai.GenerativeModel(fallback_name)
