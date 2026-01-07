@@ -12,9 +12,12 @@ class GeminiEngine(BaseAIEngine):
         self.api_key = api_key or os.environ.get("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            # Upgraded to Gemini 2.5 Flash (v5.0 high-intelligence edition)
+            self.model_name = 'gemini-2.5-flash'
+            self.model = genai.GenerativeModel(self.model_name)
         else:
             self.model = None
+            self.model_name = None
 
     def generate_insight(self, config_data):
         if not self.model:
@@ -51,6 +54,20 @@ class GeminiEngine(BaseAIEngine):
             response = self.model.generate_content(prompt)
             return response.text
         except Exception as e:
+            # Multi-stage Fallback (v5.0 robustness)
+            # 1. Try 'gemini-2.5-flash-latest'
+            # 2. Try 'gemini-1.5-flash' as a last resort
+            fallback_models = ['gemini-2.5-flash-latest', 'gemini-1.5-flash']
+            
+            for fallback_name in fallback_models:
+                try:
+                    print(f"Model {self.model_name} failed. Attempting fallback to {fallback_name}...")
+                    fallback_model = genai.GenerativeModel(fallback_name)
+                    response = fallback_model.generate_content(prompt)
+                    return response.text
+                except Exception:
+                    continue
+            
             return f"Error generating insight: {str(e)}"
 
 # Factory or Manager to handle future expansion
