@@ -95,8 +95,27 @@
         // CRITICAL FIX: Parent the highlight to the starfield so they rotate together
         starField.add(highlight);
 
+        // Hindu Rashi to Modern Constellation Mapping
+        const rashiMap = {
+            'Mesha': 'Aries',
+            'Vrishabha': 'Taurus',
+            'Mithuna': 'Gemini',
+            'Kataka': 'Cancer',
+            'Simha': 'Leo',
+            'Kanya': 'Virgo',
+            'Tula': 'Libra',
+            'Vrishchika': 'Scorpio',
+            'Dhanus': 'Sagittarius',
+            'Makara': 'Capricorn',
+            'Kumbha': 'Aquarius',
+            'Meena': 'Pisces'
+        };
+
+        const modernName = rashiMap[rashi] || 'Unknown';
+        document.getElementById('rashi-name').innerText = `${rashi} (${modernName})`;
+
         // Add Label to Highlight
-        const rashiLabel = createLabel(rashi.toUpperCase(), '#ffcc00');
+        const rashiLabel = createLabel(`${rashi.toUpperCase()} / ${modernName.toUpperCase()}`, '#ffcc00');
         rashiLabel.position.set(0, 180, 0); // Position relative to highlight center
         highlight.add(rashiLabel);
 
