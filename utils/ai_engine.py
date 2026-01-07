@@ -10,14 +10,25 @@ class BaseAIEngine(metaclass=abc.ABCMeta):
 class GeminiEngine(BaseAIEngine):
     def __init__(self, api_key=None):
         self.api_key = api_key or os.environ.get("GOOGLE_API_KEY")
+        self._model = None
+        self.model_name = 'gemini-1.5-flash' # Reverting to most stable known ID
         if self.api_key:
-            genai.configure(api_key=self.api_key)
-            # Upgraded to Gemini 2.5 Flash (v5.0 high-intelligence edition)
-            self.model_name = 'gemini-2.5-flash'
-            self.model = genai.GenerativeModel(self.model_name)
+            try:
+                genai.configure(api_key=self.api_key)
+                print("Gemini API configured successfully.")
+            except Exception as e:
+                print(f"Error configuring Gemini: {e}")
         else:
-            self.model = None
-            self.model_name = None
+            print("WARNING: GOOGLE_API_KEY not found in environment.")
+
+    @property
+    def model(self):
+        if self._model is None and self.api_key:
+            try:
+                self._model = genai.GenerativeModel(self.model_name)
+            except Exception as e:
+                print(f"Error initializing model {self.model_name}: {e}")
+        return self._model
 
     def generate_insight(self, config_data):
         if not self.model:
@@ -36,6 +47,10 @@ class GeminiEngine(BaseAIEngine):
         karana = config_data.get('karana')
         location = config_data.get('address')
         input_dt = config_data.get('input_datetime')
+        rashi = config_data.get('rashi', {}).get('name', 'N/A')
+        
+        # Ayanamsa is usually around 24 degrees in this era
+        ayanamsa = "approx. 24.1°" 
         
         # Split datetime if possible for cleaner prompt
         date_part, time_part = "N/A", "N/A"
@@ -45,10 +60,12 @@ class GeminiEngine(BaseAIEngine):
             date_part = input_dt
 
         prompt = f"""
-        Role: The "Astro-Tutor" (An expert in Astronomy, Math, and Mythology who speaks the language of middle and high school students).
+        Role: The "Astro-Tutor" (An expert in Astronomy, Math, and Mythology who speaks the language of middle and high school students—think science YouTuber meets coding instructor).
 
         Objective:
-        Generate a comprehensive Panchanga report for this specific moment. Bridge the gap between Ancient Indian Astronomy and Modern Science. Retain high-level technical details but explain them using relatable analogies (geometry, sports, clockwork, coding).
+        Generate a comprehensive "Cosmic Dashboard" report based on the provided astronomical data. Bridge the gap between Ancient Indian Astronomy (Panchanga) and Modern Astrophysics for Grades 6–12. You must retain high-level technical details (degrees, names, periods) but explain them using relatable analogies (geometry, video games, sports, coding).
+
+        Key Requirement: You must explicitly explain the difference between the Modern Zodiac (Western/Tropical) and the Hindu Zodiac (Sidereal/Fixed), explaining why they don't match due to the Earth's wobble (Precession).
 
         Input Data:
         - Date: {date_part}
@@ -59,33 +76,40 @@ class GeminiEngine(BaseAIEngine):
         - Paksha: {paksha}
         - Tithi: {tithi}
         - Nakshatra: {nakshatra}
+        - Rashi (Moon Sign): {rashi}
         - Yoga: {yoga}
         - Karana: {karana}
+        - Ayanamsa: {ayanamsa}
 
         Instructions for Output Structure:
 
         1. Introduction: The "Time-Keeping" Engine
-        - Explain what a calendar actually is.
-        - Introduce the Western (Solar) vs. Hindu Panchanga (Lunisolar) systems.
+        - Contrast the Western Calendar (Solar/Season-based) with the Hindu Panchanga (Lunisolar/Star-based).
+        - Analogy: Standard Watch vs. GPS Tracker.
 
-        2. The Code: Western vs. Hindu Systems
-        - Highlight differences: Tropical Zodiac (Western/Seasons) vs. Sidereal Zodiac (Hindu/Fixed Stars).
-        - Explain the "Start of Day" (Midnight vs. Sunrise).
+        2. The Zodiac Belt (The Sky Map)
+        - Explain the difference between Rashi (Hindu) and Signs (Western).
+        - Explain Precession (The Wobble) and Ayanamsa (The drift).
+        - Analogy: "Moving Stickers" (Seasons) vs. "Fixed Background" (Stars).
 
-        3. The "Birthday Algorithm" (The 11-Day Gap)
-        - Explain why an Indian birthday differs from a Western birthday.
-        - Show the math: Solar Year (365.25 days) - Lunar Year (354 days) = ~11 days difference.
-        - Explain the "drift" and how Adhika Masa (Leap Month) fixed it.
+        3. The "Birthday Algorithm" (The 11-Day Lag)
+        - Show the math: Solar Year (365.25) - Lunar Year (354) = ~11 days.
+        - Explain why a Hindu birthday drifts backward every year.
 
-        4. The Deep Dive (The Result Analysis)
-        - Section A: The Astronomer’s Snapshot (Geometry) -> Explain Tithi (Angle), Nakshatra (Coordinates/Star), Yoga, and Karana using the input data above.
-        - Section B: The Physicist’s Lab (Mechanics) -> Explain Orbital Periods (Synodic vs. Sidereal) and Precession.
-        - Section C: The Storyteller’s Archive (Myth) -> Connect the astronomy to the mythology (Deities, Vibes, Stories) for these specific results.
+        4. The Deep Dive (Technical Analysis)
+        - Analyze the specific input date using the data provided.
+        - Section A: The Geometry (Tithi & Yoga): Angles between Sun and Moon.
+        - Section B: The GPS Coordinates (Nakshatra & Rashi): Specific star clusters and Constellations.
+        - Section C: The Mythology (Story Mode): Deities and symbolic vibes for this moment.
 
-        5. The Cosmic Cheat Sheet (Vocabulary)
-        - Define: Equinox, Precession, and Epoch using simple analogies (spinning tops, video game save points, seesaws).
+        5. Visual Interaction Concepts
+        - Throughout the text, insert "🖥️ Interactive Simulation Concept" blocks.
+        - Describe a hypothetical 3D diagram or widget that explains the concept (e.g., "A slider that rotates the moon").
 
-        Tone: Encouraging, precise, visual, and educational. Use Markdown formatting. Use the term 'Panchanga' instead of 'Vedic'.
+        6. The Cosmic Cheat Sheet (Vocabulary)
+        - Define: Equinox, Precession, Ayanamsa, and Ecliptic using simple analogies (seesaws, spinning tops).
+
+        Tone: High-energy, precise, visual, and encouraging. Use Markdown formatting (bolding, bullet points). Use the term 'Panchanga' instead of 'Vedic'.
         """
         
         try:
