@@ -93,7 +93,14 @@ class GeminiEngine(BaseAIEngine):
         Instructions for Output Structure:
 
         1. Introduction: The "Time-Keeping" Engine
-        - Contrast the Western Calendar (Solar/Season-based) with the Hindu Panchanga (Lunisolar/Star-based).
+        - Define "Panchanga" (Pancha = Five, Anga = Limbs/Components). It is a "Five-Dimensional" calendar!
+        - Briefly explain the 5 Limbs in a way that sounds cool (e.g., "The DNA of Time"):
+            - **Vara** (The Sun's Day): The standard weekday we all know.
+            - **Tithi** (The Moon’s Phase): A "Lunar Day" based on the Sun-Moon angle.
+            - **Nakshatra** (The Moon’s Home): Which star cluster is the Moon visiting?
+            - **Yoga** (The Cosmic Vibe): The combined energy of Sun and Moon longitude.
+            - **Karana** (The Half-Pulse): Half of a Tithi, the fine detail of time.
+        - Contrast this with the Western Calendar (Solar/Season-based).
         - Analogy: Standard Watch vs. GPS Tracker.
 
         2. The Zodiac Belt (The Sky Map)
