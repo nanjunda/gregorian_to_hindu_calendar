@@ -115,8 +115,8 @@
             const x = (e.clientX / window.innerWidth) * 2 - 1;
             const y = -(e.clientY / window.innerHeight) * 2 + 1;
             const angle = Math.atan2(y, x);
-            moonOrbit.rotation.y = -angle; // Rotate around Y for 3D view
-            updateStats(-angle);
+            moonOrbit.rotation.y = angle; // Align rotation with mouse angle
+            updateStats(angle);
         });
 
         function animate() {

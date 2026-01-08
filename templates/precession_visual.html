@@ -16,51 +16,83 @@
 
         #ui {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(13, 17, 23, 0.85);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 210, 255, 0.3);
-            backdrop-filter: blur(10px);
-            width: 250px;
+            top: 10px;
+            right: 10px;
+            background: rgba(13, 17, 23, 0.75);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            backdrop-filter: blur(5px);
+            width: 180px;
             pointer-events: auto;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        #ui.collapsed {
+            width: 30px;
+            height: 30px;
+            overflow: hidden;
+            padding: 5px;
+        }
+
+        #ui.collapsed * {
+            display: none;
+        }
+
+        #ui.collapsed #toggle-ui {
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+
+        #toggle-ui {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #8b949e;
+            user-select: none;
+            z-index: 101;
         }
 
         h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.2rem;
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
             color: #00d2ff;
+            padding-right: 15px;
         }
 
         p {
-            font-size: 0.85rem;
-            line-height: 1.4;
+            font-size: 0.75rem;
+            line-height: 1.3;
             color: #8b949e;
-            margin: 0 0 20px 0;
+            margin: 0 0 10px 0;
         }
 
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         label {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             color: #00d2ff;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             font-weight: 700;
         }
 
         input[type=range] {
             width: 100%;
             cursor: pointer;
+            height: 4px;
         }
 
         .stats {
             font-family: 'Space Mono', monospace;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #ffcc00;
         }
     </style>
@@ -68,18 +100,19 @@
 
 <body>
     <div id="ui">
+        <div id="toggle-ui" onclick="document.getElementById('ui').classList.toggle('collapsed')">✖</div>
         <h2>Precession 2.0</h2>
-        <p>Earth doesn't just spin; it wobbles like a slow-motion top! This cycle takes 25,800 years.</p>
+        <p>Earth's slow 25,800-year axial wobble.</p>
 
         <div class="control-group">
-            <label>Timeline (Year)</label>
+            <label>Timeline</label>
             <input type="range" id="year-slider" min="0" max="25800" value="0">
             <div class="stats" id="year-display">Year: 0</div>
         </div>
 
         <div class="control-group">
             <label>North Star Target</label>
-            <div id="target-star" style="color:#ffffff; font-weight:bold;">Polaris (Current)</div>
+            <div id="target-star" style="color:#ffffff; font-weight:bold; font-size: 0.75rem;">Polaris (Current)</div>
         </div>
     </div>
 
