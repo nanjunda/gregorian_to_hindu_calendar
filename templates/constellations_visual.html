@@ -3,140 +3,183 @@
 
 <head>
     <meta charset="UTF-8">
+    <title>Interactive 3D Zodiac with Moon</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Constellation Explorer</title>
     <style>
+        html,
         body {
             margin: 0;
+            padding: 0;
+            background: #05070c;
             overflow: hidden;
-            background: #0b0e14;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
         }
 
-        #ui {
+        #description {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-
-        .highlight {
-            color: #ffcc00;
-            font-weight: 700;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #00d2ff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+            pointer-events: none;
+            padding: 0 20px;
+            box-sizing: border-box;
         }
     </style>
+    <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
 </head>
 
 <body>
-    <div id="ui">
-        <div id="target-info">Sky Focus: <span class="highlight" id="rashi-name">Loading...</span></div>
-        <div style="font-size: 0.75rem; color: #888; margin-top: 5px;">Showing Sidereal (fixed star) coordinates.</div>
-    </div>
+    <div id="description">Interactive 3D Zodiac belt with symbols and names. Moon is shown in the foreground with slow
+        orbital motion and simulated phases. Use mouse to rotate and zoom the view.</div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
+        // Get Rashi from URL for focus
         const params = new URLSearchParams(window.location.search);
-        const rashi = params.get('rashi') || 'Leo';
-        document.getElementById('rashi-name').innerText = rashi;
+        const targetRashi = (params.get('rashi') || 'Simha').split(' (')[0].trim();
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
-        camera.position.set(0, 0, 1);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        const textureLoader = new THREE.TextureLoader();
-        const zodiacTexture = textureLoader.load('/static/images/zodiac_map.jpg');
-
-        // Background Plane (The Map)
-        const bgGeo = new THREE.PlaneGeometry(3000, 1000);
-        const bgMat = new THREE.MeshBasicMaterial({ map: zodiacTexture, transparent: true });
-        const bgMesh = new THREE.Mesh(bgGeo, bgMat);
-        bgMesh.position.z = -1000;
-        scene.add(bgMesh);
-
-        // Hindu Rashi to Modern Constellation Mapping
-        const rashiMap = {
-            'Mesha': { name: 'Aries', idx: 0 },
-            'Vrishabha': { name: 'Taurus', idx: 1 },
-            'Mithuna': { name: 'Gemini', idx: 2 },
-            'Kataka': { name: 'Cancer', idx: 3 },
-            'Simha': { name: 'Leo', idx: 4 },
-            'Kanya': { name: 'Virgo', idx: 5 },
-            'Tula': { name: 'Libra', idx: 6 },
-            'Vrishchika': { name: 'Scorpio', idx: 7 },
-            'Dhanus': { name: 'Sagittarius', idx: 8 },
-            'Makara': { name: 'Capricorn', idx: 9 },
-            'Kumbha': { name: 'Aquarius', idx: 10 },
-            'Meena': { name: 'Pisces', idx: 11 }
+        // Mapping for focus
+        const rashiToModern = {
+            'Mesha': 'Aries', 'Vrishabha': 'Taurus', 'Mithuna': 'Gemini',
+            'Kataka': 'Cancer', 'Simha': 'Leo', 'Kanya': 'Virgo',
+            'Tula': 'Libra', 'Vrishchika': 'Scorpio', 'Dhanus': 'Sagittarius',
+            'Makara': 'Capricorn', 'Kumbha': 'Aquarius', 'Meena': 'Pisces'
         };
 
-        const cleanRashi = rashi.split(' (')[0].trim();
-        const rashiInfo = rashiMap[cleanRashi] || { name: 'Unknown', idx: 4 }; // Default Leo
-        const modernName = rashiInfo.name;
+        // Scene
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x05070c, 0.0008);
 
-        // Pan map based on Rashi index (Mesha=0 is far left, Meena=11 is far right)
-        // Map width is 3000, so each sign is 250 wide. 
-        // We want Mesha (idx 0) to be at the center (x=0)? 
-        // If Mesha is at the far left of the image, we shift image to the RIGHT.
-        const rashiWidth = 3000 / 12;
-        const startX = 1500 - (rashiWidth / 2); // Far Left segment center
-        bgMesh.position.x = startX - (rashiInfo.idx * rashiWidth);
+        // Camera
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 150, 450);
 
-        let displayLabel = rashi;
-        if (modernName && !rashi.includes(`(${modernName})`)) {
-            displayLabel = `${cleanRashi} (${modernName})`;
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.screenSpacePanning = true;
+
+        // Dense starfield
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 15000;
+        const starPos = [];
+        for (let i = 0; i < starCount; i++) {
+            const r = 1200 * Math.random();
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            starPos.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
         }
-        document.getElementById('rashi-name').innerText = displayLabel;
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, sizeAttenuation: true });
+        scene.add(new THREE.Points(starGeo, starMat));
 
-        // Helper for 3D Labels
-        function createLabel(text, color) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 512; canvas.height = 128;
-            ctx.fillStyle = color; ctx.font = 'bold 48px Inter, Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(text, 256, 80);
-            const tex = new THREE.CanvasTexture(canvas);
-            const mat = new THREE.SpriteMaterial({ map: tex });
-            const sprite = new THREE.Sprite(mat);
-            sprite.scale.set(300, 75, 1);
-            return sprite;
-        }
-
-        // Add Label directly to Sky
-        const rashiLabel = createLabel(displayLabel.toUpperCase(), '#ffcc00');
-        rashiLabel.position.set(0, 150, -500);
-        scene.add(rashiLabel);
-
-        // The Moon (Foreground)
-        const moonGeo = new THREE.SphereGeometry(8, 32, 32); // even smaller
-        const moonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const moon = new THREE.Mesh(moonGeo, moonMat);
-        moon.position.set(0, 0, -200);
-        scene.add(moon);
-
-        const moonLabel = createLabel('MOON', '#ffffff');
-        moonLabel.position.set(0, 25, 0);
-        moon.add(moonLabel);
-
-        // Core interactive rotation (subtle)
-        let mouseX = 0, mouseY = 0;
-        window.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
-            mouseY = (e.clientY - window.innerHeight / 2) * 0.05;
+        // Zodiac 3D band
+        const bandRadius = 250;
+        const bandThickness = 12;
+        const bandGeom = new THREE.TorusGeometry(bandRadius, bandThickness, 32, 128);
+        const bandMat = new THREE.MeshStandardMaterial({
+            color: 0x996633,
+            emissive: 0x442200,
+            emissiveIntensity: 0.4,
+            metalness: 0.2,
+            roughness: 0.6,
+            transparent: true,
+            opacity: 0.25
         });
+        const zodiacBand = new THREE.Mesh(bandGeom, bandMat);
+        zodiacBand.rotation.x = Math.PI / 2;
 
+        // Main container for rotation
+        const mainGroup = new THREE.Group();
+        mainGroup.add(zodiacBand);
+        scene.add(mainGroup);
+
+        // Zodiac symbols + names
+        const zodiac = [
+            { name: 'Aries', symbol: '♈' }, { name: 'Taurus', symbol: '♉' }, { name: 'Gemini', symbol: '♊' },
+            { name: 'Cancer', symbol: '♋' }, { name: 'Leo', symbol: '♌' }, { name: 'Virgo', symbol: '♍' },
+            { name: 'Libra', symbol: '♎' }, { name: 'Scorpio', symbol: '♏' }, { name: 'Sagittarius', symbol: '♐' },
+            { name: 'Capricorn', symbol: '♑' }, { name: 'Aquarius', symbol: '♒' }, { name: 'Pisces', symbol: '♓' }
+        ];
+
+        let targetIndex = 4; // Default Leo
+        const modernTarget = rashiToModern[targetRashi] || 'Leo';
+        zodiac.forEach((z, i) => { if (z.name === modernTarget) targetIndex = i; });
+
+        const symbolGroup = new THREE.Group();
+        zodiac.forEach((z, i) => {
+            const angle = (i / 12) * Math.PI * 2;
+            const x = bandRadius * Math.cos(angle);
+            const zpos = bandRadius * Math.sin(angle);
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 1024, 1024);
+
+            const isTarget = (i === targetIndex);
+            ctx.fillStyle = isTarget ? '#ffcc00' : '#ffd27d';
+            ctx.font = 'bold 360px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(z.symbol, 512, 420);
+
+            ctx.font = 'bold 54px sans-serif';
+            ctx.fillStyle = isTarget ? '#00d2ff' : '#ffffff';
+            ctx.fillText((isTarget ? (targetRashi.toUpperCase() + " / ") : "") + z.name.toUpperCase(), 512, 620);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.position.set(x, 25, zpos);
+            sprite.scale.set(70, 70, 1);
+            symbolGroup.add(sprite);
+        });
+        mainGroup.add(symbolGroup);
+
+        // Rotate mainGroup so the target Rashi is facing the camera
+        // Band is in XZ plane. Angle 0 is X=250, Z=0.
+        // Camera is at Z=450. We want Z=250 for the target.
+        // So angle i should be at PI/2.
+        mainGroup.rotation.y = - (targetIndex / 12) * Math.PI * 2 + Math.PI / 2;
+
+        // Lighting
+        scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        const dir = new THREE.DirectionalLight(0xffcc88, 0.8); dir.position.set(300, 600, 400); scene.add(dir);
+
+        // Moon (foreground with phase animation and 5.1 deg tilt)
+        const moonGeom = new THREE.SphereGeometry(20, 64, 64);
+        const moonMat = new THREE.MeshStandardMaterial({ color: 0xd9d9d9, roughness: 0.9, metalness: 0 });
+        const moon = new THREE.Mesh(moonGeom, moonMat);
+        const moonOrbit = new THREE.Group();
+        moonOrbit.rotation.x = THREE.MathUtils.degToRad(5.1);
+        moon.position.set(0, 50, 100);
+        moonOrbit.add(moon);
+        scene.add(moonOrbit);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.0); sunLight.position.set(-500, 200, 300); scene.add(sunLight);
+
+        // Animate
+        let moonAngle = 0;
         function animate() {
             requestAnimationFrame(animate);
-            camera.rotation.y += (mouseX * 0.0001 - camera.rotation.y) * 0.02;
-            camera.rotation.x += (mouseY * 0.0001 - camera.rotation.x) * 0.02;
+            mainGroup.rotation.y += 0.0003;
+            moonAngle += 0.002;
+            moon.position.x = 80 * Math.cos(moonAngle);
+            moon.position.z = 120 + 40 * Math.sin(moonAngle);
+            controls.update();
             renderer.render(scene, camera);
         }
         animate();
