@@ -18,22 +18,22 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: rgba(13, 17, 23, 0.75);
-            padding: 12px;
-            border-radius: 8px;
+            background: rgba(13, 17, 23, 0.7);
+            padding: 8px 12px;
+            border-radius: 6px;
             border: 1px solid rgba(0, 210, 255, 0.2);
             backdrop-filter: blur(5px);
-            width: 180px;
+            width: 160px;
             pointer-events: auto;
             transition: all 0.3s ease;
             z-index: 100;
         }
 
         #ui.collapsed {
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             overflow: hidden;
-            padding: 5px;
+            padding: 4px;
         }
 
         #ui.collapsed * {
@@ -44,55 +44,55 @@
             display: block;
             text-align: center;
             width: 100%;
+            font-size: 14px;
         }
 
         #toggle-ui {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 4px;
+            right: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 10px;
             color: #8b949e;
             user-select: none;
             z-index: 101;
         }
 
         h2 {
-            margin: 0 0 5px 0;
-            font-size: 0.9rem;
+            margin: 0 0 4px 0;
+            font-size: 0.8rem;
             color: #00d2ff;
-            padding-right: 15px;
         }
 
         p {
-            font-size: 0.75rem;
-            line-height: 1.3;
+            font-size: 0.65rem;
+            line-height: 1.2;
             color: #8b949e;
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
         }
 
         .control-group {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         label {
             display: block;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
             color: #00d2ff;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             font-weight: 700;
         }
 
         input[type=range] {
             width: 100%;
             cursor: pointer;
-            height: 4px;
+            height: 3px;
         }
 
         .stats {
             font-family: 'Space Mono', monospace;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #ffcc00;
         }
     </style>
@@ -102,17 +102,17 @@
     <div id="ui">
         <div id="toggle-ui" onclick="document.getElementById('ui').classList.toggle('collapsed')">✖</div>
         <h2>Precession 2.0</h2>
-        <p>Earth's slow 25,800-year axial wobble.</p>
+        <p>The 25,800-year cycle of Earth's axial wobble.</p>
 
         <div class="control-group">
             <label>Timeline</label>
             <input type="range" id="year-slider" min="0" max="25800" value="0">
-            <div class="stats" id="year-display">Year: 0</div>
+            <div class="stats" id="year-display">Year: 0 (Now)</div>
         </div>
 
         <div class="control-group">
-            <label>North Star Target</label>
-            <div id="target-star" style="color:#ffffff; font-weight:bold; font-size: 0.75rem;">Polaris (Current)</div>
+            <label>Current North Star</label>
+            <div id="target-star" style="color:#ffffff; font-weight:bold; font-size: 0.7rem;">Polaris</div>
         </div>
     </div>
 
@@ -130,8 +130,9 @@
 
         // Scene Setup
         const scene = new THREE.Scene();
+        // Adjust camera to be higher and look higher to center the full cone
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 5000);
-        camera.position.set(0, 40, 120);
+        camera.position.set(0, 80, 180);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -139,6 +140,7 @@
         document.body.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 40, 0); // Point higher up at the center of the cycle
         controls.enableDamping = true;
 
         // Space Environment
@@ -194,7 +196,7 @@
         const pathLine = new THREE.Line(pathGeo, pathMat);
         scene.add(pathLine);
 
-        // Helper for North Stars
+        // North Stars
         function addStar(name, x, y, z) {
             const dot = new THREE.Mesh(new THREE.SphereGeometry(1.5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
             dot.position.set(x, y, z);
@@ -212,9 +214,9 @@
             scene.add(sprite);
         }
 
-        addStar("POLARIS (Now)", 0, pathY, -pathRadius);
-        addStar("VEGA (Year 12,000)", 0, pathY, pathRadius);
-        addStar("THUBAN (Ancient)", -pathRadius, pathY, 0);
+        addStar("POLARIS", 0, pathY, -pathRadius);
+        addStar("VEGA", 0, pathY, pathRadius);
+        addStar("THUBAN", -pathRadius, pathY, 0);
 
         // Lighting
         const sunLight = new THREE.DirectionalLight(0xffffff, 2);
@@ -230,11 +232,11 @@
         let year = 0;
         slider.addEventListener('input', (e) => {
             year = parseInt(e.target.value);
-            display.innerText = `Year: ${year}`;
+            display.innerText = `Year: ${year}${year === 0 ? ' (Now)' : ''}`;
 
-            if (year < 5000) targetText.innerText = "Polaris (Current)";
-            else if (year < 18000) targetText.innerText = "Vega (Blue Giant)";
-            else targetText.innerText = "Thuban (The Dragon)";
+            if (year < 5000) targetText.innerText = "Polaris";
+            else if (year < 18000) targetText.innerText = "Vega";
+            else targetText.innerText = "Thuban";
         });
 
         // Add message listener for Reactive Glossary
@@ -253,7 +255,8 @@
             earth.rotation.y += 0.005;
 
             // Precession Calculation (25800 years = 360 degrees)
-            const precessionAngle = (year / 25800) * Math.PI * 2;
+            // Align Year 0 to Polaris (PI/2 rotation around X tilts top towards -Z)
+            const precessionAngle = (year / 25800) * Math.PI * 2 + Math.PI / 2;
             const tilt = 23.5 * (Math.PI / 180);
 
             // Apply the wobble to the tilt group
