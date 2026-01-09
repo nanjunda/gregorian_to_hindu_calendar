@@ -11,7 +11,7 @@ class GeminiEngine(BaseAIEngine):
     def __init__(self, api_key=None):
         self.api_key = api_key or os.environ.get("GOOGLE_API_KEY")
         self._model = None
-        self.model_name = 'gemini-1.5-flash' # Reverting to most stable known ID
+        self.model_name = 'gemini-2.0-flash' # Updated for v5.7 compatibility
         if self.api_key:
             try:
                 genai.configure(api_key=self.api_key)
