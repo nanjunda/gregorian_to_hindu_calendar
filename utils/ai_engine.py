@@ -1,6 +1,8 @@
 import os
 import abc
 import google.generativeai as genai
+import sys
+import traceback
 
 class BaseAIEngine(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -131,6 +133,8 @@ class GeminiEngine(BaseAIEngine):
             response = self.model.generate_content(system_prompt)
             return response.text
         except Exception as e:
+            print(f"ERROR in chat_with_tutor: {str(e)}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
             return f"The star-link is fuzzy... (Error: {str(e)})"
 
 # Factory or Manager to handle future expansion
