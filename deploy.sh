@@ -95,30 +95,33 @@ sudo chmod -R +x $DEPLOY_DIR/scripts 2>/dev/null || true
 
 # 3. Setup Virtual Environment in NEW location
 cd $DEPLOY_DIR
-# CRITICAL: We cannot reuse the copied venv because absolute paths (shebangs) are broken after move
-echo "🗑️ Removing copied venv to force clean recreation..."
-sudo rm -rf venv
 
-# Ensure system python is available (using pyenv from home dir causes SELinux denials)
+# CRITICAL FIX: Only delete the venv if we are NOT in Fast Mode
+# In Fast Mode, we want to REUSE the existing venv to save time and preserve labels
+if [ "$FAST_MODE" = false ]; then
+    echo "🗑️  Clearing old venv for fresh recreation..."
+    sudo rm -rf venv
+fi
+
+# Ensure system python is available
 if [ "$PKG_MGR" == "dnf" ]; then
-    echo "📦 Installing system Python 3 to avoid /home/opc/.pyenv dependency..."
+    echo "📦 Ensuring system Python 3 is present..."
     sudo dnf install -y python3
 fi
 
 if [ ! -d "venv" ]; then
-    echo "🏗️ Creating virtual environment in $DEPLOY_DIR using SYSTEM Python..."
-    # Force use of /usr/bin/python3 instead of "python3" (which might find pyenv)
+    echo "🏗️  Creating virtual environment in $DEPLOY_DIR..."
     /usr/bin/python3 -m venv venv
 fi
 
 echo "🐍 Installing Python packages..."
 ./venv/bin/pip install --upgrade pip
 
-# Optimization: only run pip install if FAST_MODE is false or requirements changed
-if [ "$FAST_MODE" = false ] || [ "$DEPLOY_DIR/requirements.txt" -nt "$DEPLOY_DIR/venv/lib" ]; then
+# Optimization: only run pip install if FAST_MODE is false, requirements changed, or gunicorn is missing
+if [ "$FAST_MODE" = false ] || [ ! -f "./venv/bin/gunicorn" ] || [ "$DEPLOY_DIR/requirements.txt" -nt "$DEPLOY_DIR/venv/lib" ]; then
     ./venv/bin/pip install -r requirements.txt
 else
-    echo "⏩ Fast Mode: Requirements unchanged, skipping pip install."
+    echo "⏩ Fast Mode: Requirements and Gunicorn verified, skipping pip install."
 fi
  
 # 3.1 Pre-download Skyfield data files (Critical for servers)
@@ -152,7 +155,9 @@ if command -v semanage &> /dev/null; then
     sudo restorecon -R -v $DEPLOY_DIR
     
     # Explicitly ensure Gunicorn is bin_t (Critical for 203/EXEC)
-    sudo chcon -t bin_t $DEPLOY_DIR/venv/bin/gunicorn
+    if [ -f "$DEPLOY_DIR/venv/bin/gunicorn" ]; then
+        sudo chcon -t bin_t $DEPLOY_DIR/venv/bin/gunicorn
+    fi
     
     # Allow Nginx to connect to the Gunicorn port (8000)
     echo "🛡️ Explicitly allowing Nginx to connect to port 8000..."
