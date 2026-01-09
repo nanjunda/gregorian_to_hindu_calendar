@@ -47,12 +47,16 @@ class GeminiEngine(BaseAIEngine):
         nakshatra = config_data.get('nakshatra')
         yoga = config_data.get('yoga')
         karana = config_data.get('karana')
+        vara = config_data.get('vara', 'N/A')
         location = config_data.get('address')
         input_dt = config_data.get('input_datetime')
+        
+        # Safe extraction for nested objects (Rashi/Lagna)
         rashi_obj = config_data.get('rashi')
-        rashi = "N/A"
-        if isinstance(rashi_obj, dict):
-            rashi = rashi_obj.get('name', 'N/A')
+        rashi = rashi_obj.get('name', 'N/A') if isinstance(rashi_obj, dict) else "N/A"
+        
+        lagna_obj = config_data.get('lagna')
+        lagna = lagna_obj.get('name', 'N/A') if isinstance(lagna_obj, dict) else "N/A"
         
         # Ayanamsa is usually around 24 degrees in this era
         ayanamsa = "approx. 24.11° (Chitra Paksha)" 
@@ -64,6 +68,20 @@ class GeminiEngine(BaseAIEngine):
         elif input_dt:
             date_part = input_dt
 
+        # V5.8: Construct specific JSON object for the AI to analyze
+        panchanga_elements = {
+            "Samvatsara": samvatsara,
+            "Masa": masa,
+            "Paksha": paksha,
+            "Tithi": tithi,
+            "Vara": vara,
+            "Nakshatra": nakshatra,
+            "Yoga": yoga,
+            "Karana": karana,
+            "Rashi": rashi,
+            "Lagna": lagna
+        }
+
         prompt = f"""
         Role: The "Astro-Tutor" (Scientific YouTuber meets Coding Instructor).
         Objective: Generate a summary and a detailed "Cosmic Dashboard" report. 
@@ -73,21 +91,16 @@ class GeminiEngine(BaseAIEngine):
         - Date: {date_part}
         - Time: {time_part}
         - Location: {location}
-        - Samvatsara: {samvatsara}
-        - Masa: {masa}
-        - Paksha: {paksha}
-        - Tithi: {tithi}
-        - Nakshatra: {nakshatra}
-        - Rashi (Moon Sign): {rashi}
-        - Yoga: {yoga}
-        - Karana: {karana}
-        - Ayanamsa: {ayanamsa}
+        
+        **Panchanga Elements to Decode:**
+        {panchanga_elements}
 
         JSON Structure Requirements:
         1. "audio_summary": A high-level, 3-4 sentence conversational "voice-over" summary. Imagine you are a museum guide or a radio host. Make it intriguing. Focus on the 'vibe' and most unique astronomical aspect of this specific moment.
         2. "insight": The full technical Markdown report. 
         
         Detailed 'insight' requirements:
+        - **NEW SECTION REQUIRED**: start with `## 🧩 Decoding Your Specific Cosmic Alignment`. In this section, you must specifically explain the "Panchanga Elements" provided above. Do not just list them—explain *what they mean* for this specific instance (e.g., "Why is {vara} significant?", "What is the quality of {nakshatra}?").
         - Contrast Western (Tropical) and Hindu (Sidereal) systems.
         - Use Active Render Tags: [[RENDER:ZODIAC_COMPARISON]], [[RENDER:MOON_PHASE_3D]], [[RENDER:PRECESSION_WOBBLE]], [[RENDER:CONSTELLATION_MAP]].
         - Explain the 5 Angas (DNA of Time).
