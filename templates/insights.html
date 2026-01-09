@@ -571,12 +571,13 @@
 
             try {
                 // Get context from global insightData
+                // Get context safely - chat can happen even if insightData is partial
                 const context = {
-                    address: insightData?.address,
-                    samvatsara: insightData?.samvatsara,
-                    masa: insightData?.masa,
-                    tithi: insightData?.tithi,
-                    nakshatra: insightData?.nakshatra
+                    address: (typeof insightData !== 'undefined') ? insightData?.address : "Unknown Location",
+                    samvatsara: (typeof insightData !== 'undefined') ? insightData?.samvatsara : "Unknown",
+                    masa: (typeof insightData !== 'undefined') ? insightData?.masa : "Unknown",
+                    tithi: (typeof insightData !== 'undefined') ? insightData?.tithi : "Unknown",
+                    nakshatra: (typeof insightData !== 'undefined') ? insightData?.nakshatra : "Unknown"
                 };
 
                 const response = await fetch('/api/ai-chat', {
