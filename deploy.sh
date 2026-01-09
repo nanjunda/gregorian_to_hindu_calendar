@@ -3,23 +3,14 @@
 # Exit on any error
 set -e
 
-echo "🚀 Starting Hindu Panchanga v5.0 Deployment (AI Insights Edition)..."
+echo "🚀 Starting Hindu Panchanga v5.6 Deployment (Nuclear Fresh Install)..."
 echo "ℹ️  Mode: Nginx Reverse Proxy (Port 5080) -> Gunicorn"
-echo "⚠️  RELOCATING App to /opt/panchanga to bypass SELinux Home Dir restrictions"
+echo "⚠️  RELOCATING App to /opt/panchanga for SELinux stability"
 
 APP_NAME="panchanga"
 SOURCE_DIR=$(pwd)
 DEPLOY_DIR="/opt/$APP_NAME"
-# Use SUDO_USER if running via sudo, otherwise the current user
 CURRENT_USER=${SUDO_USER:-$(whoami)}
-
-# detect --fast flag
-FAST_MODE=false
-for arg in "$@"; do
-    if [ "$arg" == "--fast" ]; then
-        FAST_MODE=true
-    fi
-done
 
 # Detect Package Manager
 if command -v dnf &> /dev/null; then
@@ -37,239 +28,134 @@ else
     exit 1
 fi
 
-echo "📦 Detected package manager: $PKG_MGR"
-
-# 1. Install dependencies
-if [ "$FAST_MODE" = false ]; then
-    echo "📦 Installing system dependencies..."
-    if [ "$PKG_MGR" == "dnf" ]; then
-        sudo dnf install -y python3-pip python3-devel nginx git-core curl policycoreutils-python-utils openssl \
-            libX11 libXext libXrender freetype libpng rsync
-        sudo systemctl enable --now nginx
-        
-        # Open Firewall Port (Security Port 58921)
-        if command -v firewall-cmd &> /dev/null; then
-            echo "🔥 Opening Firewall Port 58921..."
-            sudo firewall-cmd --permanent --add-port=58921/tcp
-            sudo firewall-cmd --reload
-        fi
-    else
-        sudo apt-get update -y
-        sudo apt-get install -y python3-pip python3-venv nginx git curl rsync
-    fi
-else
-    echo "⏩ Fast Mode: Skipping system dependency installs."
-    # Ensure rsync is present even in fast mode if possible
-    if ! command -v rsync &> /dev/null; then
-        sudo $PKG_MGR install -y rsync
-    fi
-fi
-
-# CRITICAL: Always ensure Nginx connectivity (regardless of Fast Mode)
+# 1. Install system dependencies
+echo "📦 Installing system dependencies..."
 if [ "$PKG_MGR" == "dnf" ]; then
-    echo "🛡️  Ensuring Nginx SE booleans are enabled..."
-    # These can take a while, so we only run if not already set
-    [[ $(getsebool httpd_can_network_connect) == *"off"* ]] && sudo setsebool -P httpd_can_network_connect 1 || true
-    [[ $(getsebool httpd_can_network_relay) == *"off"* ]] && sudo setsebool -P httpd_can_network_relay 1 || true
-    [[ $(getsebool httpd_unified) == *"off"* ]] && sudo setsebool -P httpd_unified 1 || true
+    sudo dnf install -y python3-pip python3-devel nginx git-core curl policycoreutils-python-utils openssl \
+        libX11 libXext libXrender freetype libpng rsync
+    sudo systemctl enable --now nginx
+    
+    # Allow Nginx network connect (Critical for 502 fix)
+    echo "🛡️ Enabling Nginx network connections..."
+    sudo setsebool -P httpd_can_network_connect 1
+    sudo setsebool -P httpd_can_network_relay 1 || true
+    sudo setsebool -P httpd_unified 1 || true
+
+    # Open Firewall Port (Security Port 58921)
+    if command -v firewall-cmd &> /dev/null; then
+        echo "🔥 Opening Firewall Port 58921..."
+        sudo firewall-cmd --permanent --add-port=58921/tcp
+        sudo firewall-cmd --reload
+    fi
+    
+    # Explicitly whitelist port 8000 for SELinux
+    echo "🛡️ Whitelisting port 8000 for backend..."
+    sudo semanage port -m -t http_port_t -p tcp 8000 || sudo semanage port -a -t http_port_t -p tcp 8000 || true
+else
+    sudo apt-get update -y
+    sudo apt-get install -y python3-pip python3-venv nginx git curl rsync
 fi
 
 # 2. Relocate Application to /opt
-echo "🚚 Syncing application to $DEPLOY_DIR..."
-# Create directory
+echo "🚚 Moving application to $DEPLOY_DIR..."
 sudo mkdir -p $DEPLOY_DIR
-
-# Use rsync to preserve existing SELinux labels on unmodified files
-echo "   Syncing files via rsync..."
+# Use rsync for clean copy
 sudo rsync -av --exclude='venv' --exclude='.git' --exclude='__pycache__' "$SOURCE_DIR/" "$DEPLOY_DIR/"
 
-# Fix ownership and traversal permissions
-echo "   Setting permissions on $DEPLOY_DIR..."
-sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR
-# Ensure directories are traversable by Nginx
-sudo find $DEPLOY_DIR -type d -exec chmod 755 {} +
-# Ensure files are readable
-sudo find $DEPLOY_DIR -type f -exec chmod 644 {} +
-# Re-apply executable bit to venv/bin and scripts
-sudo chmod -R +x $DEPLOY_DIR/scripts 2>/dev/null || true
-
-# 3. Setup Virtual Environment in NEW location
-cd $DEPLOY_DIR
-
-# CRITICAL FIX: Only delete the venv if we are NOT in Fast Mode
-# In Fast Mode, we want to REUSE the existing venv to save time and preserve labels
-if [ "$FAST_MODE" = false ]; then
-    echo "🗑️  Clearing old venv for fresh recreation..."
-    sudo rm -rf venv
-fi
-
-# Ensure system python is available
-if [ "$PKG_MGR" == "dnf" ]; then
-    echo "📦 Ensuring system Python 3 is present..."
-    sudo dnf install -y python3
-fi
-
-if [ ! -d "venv" ]; then
-    echo "🏗️  Creating virtual environment in $DEPLOY_DIR..."
-    /usr/bin/python3 -m venv venv
-fi
-
-echo "🐍 Installing Python packages..."
-./venv/bin/pip install --upgrade pip
-
-# Optimization: only run pip install if FAST_MODE is false, requirements changed, or gunicorn is missing
-if [ "$FAST_MODE" = false ] || [ ! -f "./venv/bin/gunicorn" ] || [ "$DEPLOY_DIR/requirements.txt" -nt "$DEPLOY_DIR/venv/lib" ]; then
-    ./venv/bin/pip install -r requirements.txt
-else
-    echo "⏩ Fast Mode: Requirements and Gunicorn verified, skipping pip install."
-fi
- 
-# 3.1 Pre-download Skyfield data files (Critical for servers)
-if [ ! -f "de421.bsp" ]; then
-    echo "🛰️ Pre-downloading astronomical data files..."
-    ./venv/bin/python3 -c "from skyfield.api import load; load('de421.bsp'); load.timescale()"
-else
-    echo "🛰️ Skyfield data already present."
-fi
-sudo chown $CURRENT_USER:$HTTP_GROUP *.bsp *.dat *.tdb *.preds || true
-
-# 4. FIX SELINUX (The Nuclear Way)
-if command -v semanage &> /dev/null; then
-    echo "🛡️ Configuring SELinux contexts for /opt/panchanga..."
-    
-    # 1. Allow Nginx to read static files
-    sudo semanage fcontext -a -t httpd_sys_content_t "$DEPLOY_DIR/static(/.*)?"
-    
-    # Ensure directories exist and have correct permissions for Nginx to read
-    sudo mkdir -p $DEPLOY_DIR/static/skyshots $DEPLOY_DIR/static/solar_systems
-    sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR/static
-    sudo chmod -R 775 $DEPLOY_DIR/static
-    # Set setgid bit so new files inherit the 'nginx' group
-    sudo find $DEPLOY_DIR/static -type d -exec chmod g+s {} +
-    
-    # 2. Allow Systemd/Init to execute Gunicorn (bin_t)
-    # Applying strictly to the bin folder
-    sudo semanage fcontext -a -t bin_t "$DEPLOY_DIR/venv/bin(/.*)?"
-    
-    # Apply contexts
-    sudo restorecon -R -v $DEPLOY_DIR
-    
-    # Explicitly ensure Gunicorn is bin_t (Critical for 203/EXEC)
-    if [ -f "$DEPLOY_DIR/venv/bin/gunicorn" ]; then
-        sudo chcon -t bin_t $DEPLOY_DIR/venv/bin/gunicorn
-    fi
-    
-    # Allow Nginx to connect to the Gunicorn port (8000)
-    echo "🛡️ Explicitly allowing Nginx to connect to port 8000..."
-    sudo semanage port -m -t http_port_t -p tcp 8000 || sudo semanage port -a -t http_port_t -p tcp 8000 || true
-
-
-    # CRITICAL ORACLE LINUX 9 FIX: Check for fapolicyd (Application Whitelisting)
-    # This prevents running any binary not installed via DNF/RPM (like our pip gunicorn)
-    if systemctl is-active --quiet fapolicyd; then
-        echo "🛑 fapolicyd detected! This blocks custom binaries."
-        echo "   Stopping fapolicyd to allow Gunicorn execution..."
-        sudo systemctl stop fapolicyd
-        sudo systemctl disable fapolicyd
-        # Ideally we would add a rule, but for deployment success now, we disable it.
-    fi
-fi
-
-# Explicit permission fix (Ignore errors on symlinks like 'python' which point to system read-only files)
-chmod +x $DEPLOY_DIR/venv/bin/* || true
-
-# 5. Configure systemd service
-echo "⚙️ Configuring systemd service..."
-
-# Handle Google API Key
+# 3. Handle Google API Key
 if [ -z "$GOOGLE_API_KEY" ]; then
-    echo "⚠️  GOOGLE_API_KEY is not set in the current environment."
+    echo "⚠️  GOOGLE_API_KEY is not set."
     read -p "🔑 Please enter your Google Gemini API Key: " GOOGLE_API_KEY
 fi
 
-# Using DEPLOY_DIR now instead of pwd
+# 4. Setup Virtual Environment (Always Fresh)
+cd $DEPLOY_DIR
+echo "🗑️  Clearing old virtual environment..."
+sudo rm -rf venv
+
+echo "🏗️  Creating fresh virtual environment..."
+sudo /usr/bin/python3 -m venv venv
+
+echo "🐍 Installing Python packages..."
+# We use sudo -u $CURRENT_USER to ensure the venv belongs to the real user
+sudo -u $CURRENT_USER ./venv/bin/pip install --upgrade pip
+sudo -u $CURRENT_USER ./venv/bin/pip install -r requirements.txt
+
+# 5. Pre-download Skyfield data
+echo "🛰️  Pre-downloading astronomical data files..."
+sudo -u $CURRENT_USER ./venv/bin/python3 -c "from skyfield.api import load; load('de421.bsp'); load.timescale()"
+
+# 6. FIX PERMISSIONS (Layered Strategy)
+echo "🔒 Applying Layered Permission Strategy..."
+# Phase 1: Reset all to standard readable
+sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR
+sudo find $DEPLOY_DIR -type d -exec chmod 755 {} +
+sudo find $DEPLOY_DIR -type f -exec chmod 644 {} +
+
+# Phase 2: RESTORE Execution exactly where needed
+echo "⚡ Restoring execution bits to binaries..."
+sudo chmod +x $DEPLOY_DIR/venv/bin/*
+sudo chmod -R +x $DEPLOY_DIR/scripts 2>/dev/null || true
+
+# 7. FIX SELINUX (The Nuclear Way)
+if command -v semanage &> /dev/null; then
+    echo "🛡️  Configuring SELinux labels..."
+    sudo semanage fcontext -a -t httpd_sys_content_t "$DEPLOY_DIR/static(/.*)?"
+    sudo semanage fcontext -a -t bin_t "$DEPLOY_DIR/venv/bin(/.*)?"
+    sudo restorecon -R -v $DEPLOY_DIR
+    sudo chcon -t bin_t $DEPLOY_DIR/venv/bin/gunicorn || true
+    
+    # Application Whitelisting (Oracle Linux 9)
+    if systemctl is-active --quiet fapolicyd; then
+        echo "🛑 Disabling fapolicyd to allow custom binaries..."
+        sudo systemctl stop fapolicyd
+        sudo systemctl disable fapolicyd
+    fi
+fi
+
+# 8. Configure systemd service
+echo "⚙️  Configuring systemd service..."
 sed -e "s|{{USER}}|$CURRENT_USER|g" \
     -e "s|{{GROUP}}|$HTTP_GROUP|g" \
     -e "s|{{APP_PATH}}|$DEPLOY_DIR|g" \
     -e "s|{{GOOGLE_API_KEY}}|$GOOGLE_API_KEY|g" \
-    panchanga.service.template | sudo tee /etc/systemd/system/$APP_NAME.service > /dev/null
+    $DEPLOY_DIR/panchanga.service.template | sudo tee /etc/systemd/system/$APP_NAME.service > /dev/null
 
 sudo systemctl daemon-reload
 sudo systemctl enable $APP_NAME
 sudo systemctl restart $APP_NAME
 
-# 7. LOGGING & PRIVACY: Logrotate and Image Cleanup
-echo "📝 Configuring logs and privacy settings..."
-if [ -f "$SOURCE_DIR/panchanga.logrotate" ]; then
-    sudo cp $SOURCE_DIR/panchanga.logrotate /etc/logrotate.d/panchanga
-    sudo chmod 644 /etc/logrotate.d/panchanga
-    
-    # Force hourly execution via cron (system logrotate might only be daily)
-    echo "   Setting up hourly cron job for logs..."
-    echo "0 * * * * root /usr/sbin/logrotate -f /etc/logrotate.d/panchanga" | sudo tee /etc/cron.d/panchanga-rotate > /dev/null
-fi
-
-# PRIVACY: Setup automated image cleanup (Deletes images > 24h old)
-echo "🧹 Setting up automated image cache cleanup..."
-sudo mkdir -p $DEPLOY_DIR/scripts
-sudo cp $SOURCE_DIR/scripts/cleanup_cache.sh $DEPLOY_DIR/scripts/cleanup_cache.sh
-sudo chmod +x $DEPLOY_DIR/scripts/cleanup_cache.sh
-echo "15 * * * * root $DEPLOY_DIR/scripts/cleanup_cache.sh >> /var/log/panchanga_cleanup.log 2>&1" | sudo tee /etc/cron.d/panchanga-cleanup > /dev/null
-
-# 8. SECURITY: Generate Self-Signed Certificate
-echo "🔒 Generating Self-Signed SSL Certificate..."
-# Ensure directories exist
-sudo mkdir -p /etc/ssl/private
-sudo mkdir -p /etc/ssl/certs
-
-if [ "$FAST_MODE" = false ] || [ ! -f "/etc/ssl/certs/panchanga-selfsigned.crt" ]; then
-    # Use PUBLIC_IP if available, else localhost
-    CERT_CN=$(curl -s ifconfig.me || echo "localhost")
-    
-    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout /etc/ssl/private/panchanga-selfsigned.key \
-        -out /etc/ssl/certs/panchanga-selfsigned.crt \
-        -subj "/C=IN/ST=Karnataka/L=Bangalore/O=HinduPanchanga/OU=Engineering/CN=$CERT_CN"
-    
-    # Set strict permissions for key
-    sudo chmod 600 /etc/ssl/private/panchanga-selfsigned.key
-fi
-
-# 6. Configure Nginx
+# 9. Configure Nginx
 echo "🌐 Configuring Nginx..."
 PUBLIC_IP=$(curl -s ifconfig.me || echo "localhost")
-
 sed -e "s|{{DOMAIN_OR_IP}}|$PUBLIC_IP|g" \
     -e "s|{{APP_PATH}}|$DEPLOY_DIR|g" \
-    panchanga.nginx.template | sudo tee $NGINX_CONF_DIR/$APP_NAME.conf > /dev/null
+    $DEPLOY_DIR/panchanga.nginx.template | sudo tee $NGINX_CONF_DIR/$APP_NAME.conf > /dev/null
 
 if [ -n "$NGINX_LINK_DIR" ]; then
     sudo ln -sf $NGINX_CONF_DIR/$APP_NAME.conf $NGINX_LINK_DIR/
-    sudo rm -f $NGINX_LINK_DIR/default
 fi
-
 sudo nginx -t && sudo systemctl restart nginx
 
-echo "🎉 Deployment complete (v5.4)!"
+# 10. Self-Diagnostic
+echo "================================================================="
 echo "🕵️  Self-Diagnostic: Checking Service Health..."
+sleep 5
 if systemctl is-active --quiet $APP_NAME; then
     echo "   ✅ Gunicorn Service is RUNNING."
-    echo "   🕵️  Checking backend response (localhost:8000)..."
     if curl -s -I http://127.0.0.1:8000 | grep -q "200 OK\|302 Found\|301 Moved"; then
         echo "   ✅ Backend is RESPONDING."
     else
-        echo "   ⚠️  Backend is NOT responding on port 8000. Check logs."
+        echo "   ⚠️  Backend is NOT responding. Check logs: journalctl -u panchanga"
     fi
 else
-    echo "   ❌ ERROR: Gunicorn Service is NOT running. Check 'sudo journalctl -u $APP_NAME'"
+    echo "   ❌ ERROR: Gunicorn failed to start."
 fi
 
 if systemctl is-active --quiet nginx; then
     echo "   ✅ Nginx is RUNNING."
 else
-    echo "   ❌ ERROR: Nginx is NOT running. Check 'sudo nginx -t'"
+    echo "   ❌ ERROR: Nginx failed to start."
 fi
-
 echo "================================================================="
-echo "App is SECURE at: https://$PUBLIC_IP:58921"
-echo "Note: Accept the self-signed certificate warning in browser."
+echo "🎉 SUCCESS! Access at: https://$PUBLIC_IP:58921"
