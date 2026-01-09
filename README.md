@@ -1,6 +1,6 @@
-# Hindu Panchanga Converter v4.2 (Interactive Education)
+# Hindu Panchanga Converter v5.5 (Masterclass Ed.)
 
-A high-precision tool to convert **any Gregorian event** into its traditional Vedic equivalent, featuring high-fidelity cosmic visualizations and interactive educational modules.
+A high-precision tool to convert **any Gregorian event** into its traditional Vedic equivalent, featuring high-fidelity cosmic visualizations, interactive educational modules, and an AI-powered "Astro-Tutor."
 
 ## Features
 - **Version 4.2 (Interactive Education):**
@@ -30,18 +30,21 @@ Once the script finishes, it will print your public IP. You can access the appli
 `http://<your-vm-ip>:5080`
 
 ### Cloud Deployment (Native Linux VM)
-Simply run the deployment script on your VM (Ubuntu/Debian recommended):
+Simply run the bootstrap script on your VM (Oracle Linux 9 / RHEL recommended):
 ```bash
-git clone https://github.com/nanjundasomayaji/gregorian_to_hindu_calendar.git
+git clone https://github.com/nanjunda/gregorian_to_hindu_calendar.git
 cd gregorian_to_hindu_calendar
-chmod +x deploy.sh
-./deploy.sh
+sudo bash ./deploy.sh
 ```
-The script will automatically:
-1. Install Python, Nginx, and system dependencies.
-2. Setup a virtual environment and install packages.
-3. Configure Gunicorn to run as a systemd service.
-4. Setup Nginx as a reverse proxy on port 80.
+
+### MAINTENANCE: Pulling Updates
+To quickly update your live application to the latest version:
+```bash
+cd ~/gregorian_to_hindu_calendar
+chmod +x update_app.sh
+./update_app.sh
+```
+This "Hybrid Sync" workflow uses `rsync` to preserve SELinux labels and optimizes the update process to take less than 10 seconds.
 
 ## Documentation
 Refer to the `docs/` directory for detailed architecture and implementation plans.

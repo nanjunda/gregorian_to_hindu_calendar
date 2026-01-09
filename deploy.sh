@@ -13,6 +13,14 @@ DEPLOY_DIR="/opt/$APP_NAME"
 # Use SUDO_USER if running via sudo, otherwise the current user
 CURRENT_USER=${SUDO_USER:-$(whoami)}
 
+# detect --fast flag
+FAST_MODE=false
+for arg in "$@"; do
+    if [ "$arg" == "--fast" ]; then
+        FAST_MODE=true
+    fi
+done
+
 # Detect Package Manager
 if command -v dnf &> /dev/null; then
     PKG_MGR="dnf"
@@ -32,37 +40,45 @@ fi
 echo "📦 Detected package manager: $PKG_MGR"
 
 # 1. Install dependencies
-echo "📦 Installing system dependencies..."
-if [ "$PKG_MGR" == "dnf" ]; then
-    sudo dnf install -y python3-pip python3-devel nginx git-core curl policycoreutils-python-utils openssl \
-        libX11 libXext libXrender freetype libpng
-    sudo systemctl enable --now nginx
-    
+if [ "$FAST_MODE" = false ]; then
+    echo "📦 Installing system dependencies..."
+    if [ "$PKG_MGR" == "dnf" ]; then
+        sudo dnf install -y python3-pip python3-devel nginx git-core curl policycoreutils-python-utils openssl \
+            libX11 libXext libXrender freetype libpng rsync
+        sudo systemctl enable --now nginx
+        
+        # Allow Nginx network connect (Critical)
+        echo "🛡️ Enabling Nginx network connections..."
+        sudo setsebool -P httpd_can_network_connect 1
+        sudo setsebool -P httpd_can_network_relay 1 || true
 
-    
-    # Allow Nginx network connect (Critical)
-    echo "🛡️ Enabling Nginx network connections..."
-    sudo setsebool -P httpd_can_network_connect 1
-    sudo setsebool -P httpd_can_network_relay 1 || true
-
-    # Open Firewall Port (Security Port 58921)
-    if command -v firewall-cmd &> /dev/null; then
-        echo "🔥 Opening Firewall Port 58921..."
-        sudo firewall-cmd --permanent --add-port=58921/tcp
-        sudo firewall-cmd --reload
+        # Open Firewall Port (Security Port 58921)
+        if command -v firewall-cmd &> /dev/null; then
+            echo "🔥 Opening Firewall Port 58921..."
+            sudo firewall-cmd --permanent --add-port=58921/tcp
+            sudo firewall-cmd --reload
+        fi
+    else
+        sudo apt-get update -y
+        sudo apt-get install -y python3-pip python3-venv nginx git curl rsync
     fi
 else
-    sudo apt-get update -y
-    sudo apt-get install -y python3-pip python3-venv nginx git curl
+    echo "⏩ Fast Mode: Skipping system dependency installs."
+    # Ensure rsync is present even in fast mode if possible
+    if ! command -v rsync &> /dev/null; then
+        sudo $PKG_MGR install -y rsync
+    fi
 fi
 
 # 2. Relocate Application to /opt
-echo "🚚 Moving application to $DEPLOY_DIR..."
+echo "🚚 Syncing application to $DEPLOY_DIR..."
 # Create directory
 sudo mkdir -p $DEPLOY_DIR
-# Copy files (excluding venv and .git to keep it clean)
-echo "   Copying files..."
-sudo cp -r $SOURCE_DIR/* $DEPLOY_DIR/
+
+# Use rsync to preserve existing SELinux labels on unmodified files
+echo "   Syncing files via rsync..."
+sudo rsync -av --exclude='venv' --exclude='.git' --exclude='__pycache__' "$SOURCE_DIR/" "$DEPLOY_DIR/"
+
 # Fix ownership
 sudo chown -R $CURRENT_USER:$HTTP_GROUP $DEPLOY_DIR
 
@@ -86,11 +102,21 @@ fi
 
 echo "🐍 Installing Python packages..."
 ./venv/bin/pip install --upgrade pip
-./venv/bin/pip install -r requirements.txt
+
+# Optimization: only run pip install if FAST_MODE is false or requirements changed
+if [ "$FAST_MODE" = false ] || [ "$DEPLOY_DIR/requirements.txt" -nt "$DEPLOY_DIR/venv/lib" ]; then
+    ./venv/bin/pip install -r requirements.txt
+else
+    echo "⏩ Fast Mode: Requirements unchanged, skipping pip install."
+fi
  
 # 3.1 Pre-download Skyfield data files (Critical for servers)
-echo "🛰️ Pre-downloading astronomical data files..."
-./venv/bin/python3 -c "from skyfield.api import load; load('de421.bsp'); load.timescale()"
+if [ ! -f "de421.bsp" ]; then
+    echo "🛰️ Pre-downloading astronomical data files..."
+    ./venv/bin/python3 -c "from skyfield.api import load; load('de421.bsp'); load.timescale()"
+else
+    echo "🛰️ Skyfield data already present."
+fi
 sudo chown $CURRENT_USER:$HTTP_GROUP *.bsp *.dat *.tdb *.preds || true
 
 # 4. FIX SELINUX (The Nuclear Way)
@@ -180,7 +206,7 @@ echo "🔒 Generating Self-Signed SSL Certificate..."
 sudo mkdir -p /etc/ssl/private
 sudo mkdir -p /etc/ssl/certs
 
-if [ ! -f "/etc/ssl/certs/panchanga-selfsigned.crt" ]; then
+if [ "$FAST_MODE" = false ] || [ ! -f "/etc/ssl/certs/panchanga-selfsigned.crt" ]; then
     # Use PUBLIC_IP if available, else localhost
     CERT_CN=$(curl -s ifconfig.me || echo "localhost")
     
