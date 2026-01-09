@@ -11,8 +11,12 @@ REPO_URL="https://github.com/nanjunda/gregorian_to_hindu_calendar.git"
 INSTALL_BASE="/tmp"
 INSTALL_DIR="$INSTALL_BASE/panchanga_nuclear_v5.6"
 APP_NAME="gregorian_to_hindu_calendar"
+# Allow branch override, default to current feature branch for testing
+BRANCH=${1:-"feature/v5.8-requirements"}
 
-echo "🌌 Starting Fresh Installation of Hindu Panchanga Masterclass V5.6..."
+echo "🌌 Starting Fresh Installation of Hindu Panchanga..."
+echo "🌿 Target Branch: $BRANCH"
+echo "🔑 Debug: Environment API Key Length: ${#GOOGLE_API_KEY}"
 
 # 1. Clean up old installer traces
 if [ -d "$INSTALL_DIR" ]; then
@@ -27,11 +31,15 @@ echo "📂 Working in: $(pwd)"
 
 # 3. Ensure Git is installed
 echo "📦 Ensuring Git is present..."
-sudo dnf install -y git-core
+if command -v dnf &> /dev/null; then
+    sudo dnf install -y git-core
+else
+    sudo apt-get update && sudo apt-get install -y git
+fi
 
-# 4. Clone the latest V5.4 Masterclass codebase
-echo "🏎️  Cloning Cosmic Masterclass (V5.4)..."
-git clone "$REPO_URL"
+# 4. Clone the specific branch
+echo "🏎️  Cloning Codebase ($BRANCH)..."
+git clone -b "$BRANCH" "$REPO_URL"
 
 # 5. Execute the core deployment script
 # Use absolute paths to avoid any "not found" ambiguities
