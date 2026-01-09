@@ -50,11 +50,18 @@ cd "$INSTALL_DIR/$APP_NAME"
 chmod +x deploy.sh
 
 # Pass the current environment's GOOGLE_API_KEY if it exists
-if [ ! -z "$GOOGLE_API_KEY" ]; then
-    sudo GOOGLE_API_KEY="$GOOGLE_API_KEY" bash ./deploy.sh
+# 6. Handle Google API Key (Pre-flight)
+if [ -z "$GOOGLE_API_KEY" ]; then
+    echo "⚠️  GOOGLE_API_KEY not found in environment."
+    read -p "🔑 Please enter your Google Gemini API Key: " GOOGLE_API_KEY
+    echo "✅ Key received."
 else
-    sudo bash ./deploy.sh
+    echo "✅ Found GOOGLE_API_KEY in environment."
 fi
+
+# Pass the key explicitly to the deployment script
+echo "🚢 Handing off to deploy.sh..."
+sudo GOOGLE_API_KEY="$GOOGLE_API_KEY" bash ./deploy.sh
 
 echo "================================================================="
 echo "✅ SUCCESS! Hindu Panchanga Masterclass V5.4 is now installed."
