@@ -1,5 +1,9 @@
 # 🚀 COSMIC EXPLORER: Your Guide to the Sky
 
+> [!TIP]
+> **Interactive High-Res Version Available!**
+> For 3D interactive models, audio narration, and a reactive glossary, please visit the **[Interactive Student Guide](http://localhost:5080/guide)** (when the server is running).
+
 ## Welcome, Time Traveler!
 
 Have you ever wondered what the universe looked like the exact moment you were born?
