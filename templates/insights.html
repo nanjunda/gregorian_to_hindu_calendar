@@ -588,7 +588,8 @@
                 const result = await response.json();
                 botMsg.textContent = result.success ? result.response : "The star-link is fuzzy... " + result.error;
             } catch (err) {
-                botMsg.textContent = "Cannot reach the Maestro right now.";
+                botMsg.textContent = "Connection Error: " + err.message;
+                console.error("Chat Error:", err);
             }
             messages.scrollTop = messages.scrollHeight;
         }
