@@ -1,46 +1,52 @@
 #!/bin/bash
 
 # =================================================================
-# Hindu Panchanga V5.3 - Oracle Linux 9 Fresh Install Orchestrator
+# Hindu Panchanga V5.4 - Oracle Linux 9 Fresh Install Orchestrator
 # =================================================================
 
 # Exit on any error
 set -e
 
 REPO_URL="https://github.com/nanjunda/gregorian_to_hindu_calendar.git"
-INSTALL_DIR="panchanga_installer_v5.3"
-APP_FOLDER="gregorian_to_hindu_calendar"
+INSTALL_BASE="/tmp"
+INSTALL_DIR="$INSTALL_BASE/panchanga_stage_v5.4"
+APP_NAME="gregorian_to_hindu_calendar"
 
-echo "🌌 Starting Fresh Installation of Hindu Panchanga Masterclass..."
+echo "🌌 Starting Fresh Installation of Hindu Panchanga Masterclass V5.4..."
 
 # 1. Clean up old installer traces
 if [ -d "$INSTALL_DIR" ]; then
     echo "🧹 Removing previous installation traces..."
-    rm -rf "$INSTALL_DIR"
+    sudo rm -rf "$INSTALL_DIR"
 fi
 
 # 2. Create and enter temporary staging dir
-mkdir "$INSTALL_DIR"
+mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
+echo "📂 Working in: $(pwd)"
 
 # 3. Ensure Git is installed
 echo "📦 Ensuring Git is present..."
 sudo dnf install -y git-core
 
-# 4. Clone the latest V5.3 Masterclass codebase
-echo "🏎️  Cloning Cosmic Masterclass (V5.3)..."
+# 4. Clone the latest V5.4 Masterclass codebase
+echo "🏎️  Cloning Cosmic Masterclass (V5.4)..."
 git clone "$REPO_URL"
 
 # 5. Execute the core deployment script
-if [ ! -d "$APP_FOLDER" ]; then
-    echo "❌ Error: Could not find $APP_FOLDER after clone."
+# Use absolute paths to avoid any "not found" ambiguities
+DEPLOY_PATH="$INSTALL_DIR/$APP_NAME/deploy.sh"
+
+if [ ! -f "$DEPLOY_PATH" ]; then
+    echo "❌ Error: Could not find deploy.sh at $DEPLOY_PATH"
     exit 1
 fi
 
-cd "$APP_FOLDER"
-echo "🚀 Launching Deployment Engine in $(pwd)..."
+echo "🚀 Launching Deployment Engine..."
+echo "📍 Transitioning to: $INSTALL_DIR/$APP_NAME"
+cd "$INSTALL_DIR/$APP_NAME"
 
-# Ensure deploy script is executable and run using bash explicitly
+# Ensure deploy script is executable
 chmod +x deploy.sh
 
 # Pass the current environment's GOOGLE_API_KEY if it exists
@@ -51,7 +57,7 @@ else
 fi
 
 echo "================================================================="
-echo "✅ SUCCESS! Hindu Panchanga Masterclass is now installed."
+echo "✅ SUCCESS! Hindu Panchanga Masterclass V5.4 is now installed."
 echo "🌍 Check your Public IP on port 58921."
 echo "📘 The Student Guide is linked in the footer."
 echo "================================================================="
