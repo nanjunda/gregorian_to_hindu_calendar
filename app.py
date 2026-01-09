@@ -385,19 +385,27 @@ def ai_chat():
     Handle questions from students about the current cosmic alignment.
     """
     try:
+        print("DEBUG: Received AI Chat Request", flush=True) # Debug Print
         data = request.get_json()
+        print(f"DEBUG: Request Data: {data}", flush=True) # Debug Print
         message = data.get('message')
         context = data.get('context', {}) # Contains Tithi, Nakshatra etc.
 
         if not message:
+            print("DEBUG: No message found in request", flush=True) # Debug Print
             return jsonify({"success": False, "error": "Missing message"}), 400
             
+        print("DEBUG: Calling AI Engine...", flush=True) # Debug Print
         response = ai_engine.chat_with_tutor(message, context)
+        print(f"DEBUG: AI Response Length: {len(response)}", flush=True) # Debug Print
+        
         return jsonify({
             "success": True,
             "response": response
         })
     except Exception as e:
+        print(f"DEBUG: CRITICAL ERROR in /api/ai-chat: {str(e)}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/insights', methods=['GET', 'POST'], strict_slashes=False)
