@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =================================================================
-# Hindu Panchanga V5.4 - Oracle Linux 9 Fresh Install Orchestrator
+# Hindu Panchanga V5.6 - Oracle Linux 9 Fresh Install Orchestrator
 # =================================================================
 
 # Exit on any error
@@ -9,10 +9,10 @@ set -e
 
 REPO_URL="https://github.com/nanjunda/gregorian_to_hindu_calendar.git"
 INSTALL_BASE="/tmp"
-INSTALL_DIR="$INSTALL_BASE/panchanga_stage_v5.4"
+INSTALL_DIR="$INSTALL_BASE/panchanga_nuclear_v5.6"
 APP_NAME="gregorian_to_hindu_calendar"
 
-echo "🌌 Starting Fresh Installation of Hindu Panchanga Masterclass V5.4..."
+echo "🌌 Starting Fresh Installation of Hindu Panchanga Masterclass V5.6..."
 
 # 1. Clean up old installer traces
 if [ -d "$INSTALL_DIR" ]; then
