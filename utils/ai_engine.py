@@ -110,13 +110,33 @@ class GeminiEngine(BaseAIEngine):
         try:
             print("DEBUG: Generating content via Gemini...", file=sys.stderr)
             response = self.model.generate_content(prompt)
-            print("DEBUG: Gemini response received.", file=sys.stderr)
-            return response.text
+            print("DEBUG: Raw Gemini Response:", response.text, file=sys.stderr)
+            
+            # V6.0 Fix: Sanitize and Parse JSON
+            raw_text = response.text.replace('```json', '').replace('```', '').strip()
+            
+            # Default fallback if parsing fails
+            final_insight = raw_text
+            audio_summary = "Welcome to your cosmic dashboard."
+            
+            try:
+                import json
+                data = json.loads(raw_text)
+                final_insight = data.get("insight", raw_text)
+                audio_summary = data.get("audio_summary", audio_summary)
+                # Store the audio summary so it can be retrieved by the TTS endpoint
+                self.last_audio_summary = audio_summary 
+            except json.JSONDecodeError as je:
+                print(f"DEBUG: JSON Parse Warning: {je}. Using raw text.", file=sys.stderr)
+                # Fallback: If it's not valid JSON, it's widely likely just the text insight
+                final_insight = raw_text
+
+            return final_insight
+            
         except Exception as e:
             print(f"ERROR in generate_insight: {str(e)}", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
-            # Fallback logic remains same...
-            return f"Error: {str(e)}"
+            return f"**Cosmic Connection Error**: {str(e)}.\n\nPlease check your API Key configuration."
 
     def chat_with_tutor(self, message, context_data):
         if not self.model:
