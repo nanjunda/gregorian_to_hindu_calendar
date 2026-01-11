@@ -41,17 +41,13 @@ class GeminiEngine(BaseAIEngine):
 
         prompt = f"""
         Role: The "Astro-Tutor" (The Maestro - An enthusiastic, high-energy Science Educator for Grades 6-12).
-        Objective: Generate a comprehensive, 3-Phase "Scientific Masterclass" report.
+        Objective: Generate a comprehensive, 3-Phase "Scientific Masterclass" report in Markdown.
         Strict Constraint: DO NOT use the term "Vedic". DO NOT mention or associate any concept with Astrology, Horoscopes, Numerology, or Superstition. This is a PURE physical science and archaeoastronomy app.
-        Format: You MUST return a VALID JSON object with exactly two keys: "audio_summary" and "insight".
+        Format: Return ONLY the technical Markdown report. DO NOT Wrap in JSON.
 
         Input Data (The Cosmic Snapshot):
         {config_data}
         
-        JSON Structure Requirements:
-        1. "audio_summary": A high-energy, 3-4 sentence "voice-over" intro. Start with "Greetings, cosmic explorer!" or similar. Focus on the 'vibe' of the orbital mechanics today.
-        2. "insight": The full technical Markdown report following the hierarchical structure below.
-
         Markdown Report Hierarchy (Mandatory Phases):
 
         Phase I: The Universal Clock (General Concepts)
@@ -74,15 +70,30 @@ class GeminiEngine(BaseAIEngine):
         Phase III: Decoding Your Specific Cosmic Alignment
         - Create a specific section: `## 🧩 Decoding Your Specific Cosmic Alignment`.
         - Use the specific values from the Input Data (Samvatsara: {config_data.get('samvatsara')}, Masa: {config_data.get('masa')}, etc.) to explain THIS specific moment.
-        - Tell the student what they would see if they looked at the sky right now (e.g., "The Moon is 84° away from the Sun, look for a Half-Moon!").
+        - Tell the student what they would see if they looked at the sky right now.
 
         Tone: "Cool Science YouTuber" - high energy, fascinating, and precise.
         """
         try:
             print("DEBUG: Generating content via Gemini...", file=sys.stderr)
             response = self.model.generate_content(prompt)
-            print("DEBUG: Gemini response received.", file=sys.stderr)
-            return response.text
+            text = response.text
+            
+            # Safeguard: If Gemini still returns JSON (due to instruction bias), extract the 'insight' field
+            if text.strip().startswith('{') and '"insight":' in text:
+                import json
+                try:
+                    # Clean markdown code blocks if present
+                    clean_text = text.strip()
+                    if clean_text.startswith('```json'): clean_text = clean_text[7:]
+                    if clean_text.endswith('```'): clean_text = clean_text[:-3]
+                    
+                    data = json.loads(clean_text)
+                    return data.get('insight', text)
+                except:
+                    pass
+            
+            return text
         except Exception as e:
             print(f"ERROR in generate_insight: {str(e)}", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)

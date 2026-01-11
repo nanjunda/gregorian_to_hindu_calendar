@@ -407,10 +407,6 @@
 
             <div class="actions" style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center;">
                 <a href="/" class="back-link" style="margin-top: 0;">← Return to Converter</a>
-                <button id="audio-tutor-btn" class="btn glass hidden"
-                    style="background: rgba(0, 210, 255, 0.1); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif; font-weight: 600;">
-                    <span id="audio-icon">🎙️</span> <span id="audio-text">Listen to Maestro</span>
-                </button>
             </div>
         </main>
 
@@ -564,46 +560,6 @@
                 display.innerHTML = htmlContent;
                 display.classList.remove('hidden');
                 loader.classList.add('hidden');
-
-                // Audio Narration Logic (v5.4 Summary Enabled)
-                const audioBtn = document.getElementById('audio-tutor-btn');
-                audioBtn.classList.remove('hidden');
-
-                let utterance = null;
-                audioBtn.onclick = () => {
-                    if (window.speechSynthesis.speaking) {
-                        window.speechSynthesis.cancel();
-                        updateAudioUI(false);
-                        return;
-                    }
-
-                    // Use the summary from AI, or fallback
-                    const speechText = result.audio_summary || "I've analyzed the heavens. Read the full report below.";
-
-                    utterance = new SpeechSynthesisUtterance(speechText);
-                    utterance.rate = 0.95;
-                    utterance.pitch = 1.0;
-
-                    utterance.onstart = () => updateAudioUI(true);
-                    utterance.onend = () => updateAudioUI(false);
-                    utterance.onerror = () => updateAudioUI(false);
-
-                    window.speechSynthesis.speak(utterance);
-                };
-
-                function updateAudioUI(isPlaying) {
-                    const icon = document.getElementById('audio-icon');
-                    const text = document.getElementById('audio-text');
-                    if (isPlaying) {
-                        icon.innerText = "🛑";
-                        text.innerText = "Stop Masterclass";
-                        audioBtn.style.background = "rgba(255, 87, 51, 0.2)";
-                    } else {
-                        icon.innerText = "🎙️";
-                        text.innerText = "Listen to Maestro";
-                        audioBtn.style.background = "rgba(0, 210, 255, 0.1)";
-                    }
-                }
             } else {
                 display.innerHTML = `<p>Error generating insights: ${result.error}</p>`;
                 display.classList.remove('hidden');
