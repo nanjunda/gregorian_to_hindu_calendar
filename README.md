@@ -1,15 +1,14 @@
 # Hindu Panchanga Converter v5.5 (Masterclass Ed.)
 
-A high-precision tool to convert **any Gregorian event** into its traditional Vedic equivalent, featuring high-fidelity cosmic visualizations, interactive educational modules, and an AI-powered "Astro-Tutor."
+A high-precision tool to convert **any Gregorian event** into its Traditional Panchanga equivalent, featuring high-fidelity cosmic visualizations, interactive educational modules, and an AI-powered "Astro-Tutor."
 
-## Features
-- **Version 4.2 (Interactive Education):**
-    - **Interactive 3D Modules:** "Zodiac Stadium", "Precession Top", and "Lunar Nodes" allow students to explore cosmic mechanics.
-    - **Hybrid Visualizations:** "Cosmic Alignment" (Heliocentric) and "Celestial Perspective" (Geocentric).
-    - **Universal Event Support:** Generic engine designed for Birthdays, Festivals, or historical dates.
-    - **Privacy First:** "Stealth Mode" generates base64 images, ensuring no user PII is stored on disk.
-- **core Engine:**
-    - **Vedic Recurrence:** Finds "Next Occurrence" for any event based on Masa, Paksha, and Tithi.
+### Key Features (V6.0)
+- **High-Precision Converter:** Handles events from 1900 to 2100 with location-aware precision.
+- **Scientific Masterclass (AI):** Multi-phase technical deconstructions of orbital mechanics.
+- **Universal Context:** Explains the "Great Drift" (Precession) and "Birthday Drift" (Lunar-Solar gap).
+- **3D Celestial Modules:** Interactive Zodiac Comparison, Moon Phase Protractor, and Precession Wobble.
+- **Interactive Engagement:** Maestro's Challenge (Quizzes) and Birthday Time-Machine (100-year drift).
+- **iCal Integration:** Generate recurring Traditional dates for 20 years.
     - **iCal Export:** One-click download for the next 20 occurrences (.ics).
     - **Precision:** Uses `skyfield` and Lahiri Ayanamsha for sub-arcsecond accuracy.
 - **Web UI:** Premium Glassmorphism interface with "Astronomical Insights" educational section.

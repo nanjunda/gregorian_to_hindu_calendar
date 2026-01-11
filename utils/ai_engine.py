@@ -39,104 +39,54 @@ class GeminiEngine(BaseAIEngine):
         if not config_data:
             return "Error: No astronomical configuration data provided to the AI Engine."
 
-        # Extracting data for the prompt
-        samvatsara = config_data.get('samvatsara')
-        masa = config_data.get('masa')
-        paksha = config_data.get('paksha')
-        tithi = config_data.get('tithi')
-        nakshatra = config_data.get('nakshatra')
-        yoga = config_data.get('yoga')
-        karana = config_data.get('karana')
-        vara = config_data.get('vara', 'N/A')
-        location = config_data.get('address')
-        input_dt = config_data.get('input_datetime')
-        
-        # Safe extraction for nested objects (Rashi/Lagna)
-        rashi_obj = config_data.get('rashi')
-        rashi = rashi_obj.get('name', 'N/A') if isinstance(rashi_obj, dict) else "N/A"
-        
-        lagna_obj = config_data.get('lagna')
-        lagna = lagna_obj.get('name', 'N/A') if isinstance(lagna_obj, dict) else "N/A"
-        
-        # Ayanamsa is usually around 24 degrees in this era
-        ayanamsa = "approx. 24.11° (Chitra Paksha)" 
-        
-        # Split datetime for cleaner prompt
-        date_part, time_part = "N/A", "N/A"
-        if input_dt and ' ' in input_dt:
-            date_part, time_part = input_dt.split(' ', 1)
-        elif input_dt:
-            date_part = input_dt
-
-        # V5.8: Construct specific JSON object for the AI to analyze
-        panchanga_elements = {
-            "Samvatsara": samvatsara,
-            "Masa": masa,
-            "Paksha": paksha,
-            "Tithi": tithi,
-            "Vara": vara,
-            "Nakshatra": nakshatra,
-            "Yoga": yoga,
-            "Karana": karana,
-            "Rashi": rashi,
-            "Lagna": lagna
-        }
-
         prompt = f"""
-        Role: The "Astro-Tutor" (Scientific YouTuber meets Coding Instructor).
-        Objective: Generate a summary and a detailed "Cosmic Dashboard" report. 
+        Role: The "Astro-Tutor" (The Maestro - An enthusiastic, high-energy Science Educator for Grades 6-12).
+        Objective: Generate a comprehensive, 3-Phase "Scientific Masterclass" report.
+        Strict Constraint: DO NOT use the term "Vedic". DO NOT mention or associate any concept with Astrology, Horoscopes, Numerology, or Superstition. This is a PURE physical science and archaeoastronomy app.
         Format: You MUST return a VALID JSON object with exactly two keys: "audio_summary" and "insight".
 
-        Input Data:
-        - Date: {date_part}
-        - Time: {time_part}
-        - Location: {location}
+        Input Data (The Cosmic Snapshot):
+        {config_data}
         
-        **Panchanga Elements to Decode:**
-        {panchanga_elements}
-
         JSON Structure Requirements:
-        1. "audio_summary": A high-level, 3-4 sentence conversational "voice-over" summary. Imagine you are a museum guide or a radio host. Make it intriguing. Focus on the 'vibe' and most unique astronomical aspect of this specific moment.
-        2. "insight": The full technical Markdown report. 
-        
-        Detailed 'insight' requirements:
-        - **NEW SECTION REQUIRED**: start with `## 🧩 Decoding Your Specific Cosmic Alignment`. In this section, you must specifically explain the "Panchanga Elements" provided above. Do not just list them—explain *what they mean* for this specific instance (e.g., "Why is {vara} significant?", "What is the quality of {nakshatra}?").
-        - Contrast Western (Tropical) and Hindu (Sidereal) systems.
-        - Use Active Render Tags: [[RENDER:ZODIAC_COMPARISON]], [[RENDER:MOON_PHASE_3D]], [[RENDER:PRECESSION_WOBBLE]], [[RENDER:CONSTELLATION_MAP]].
-        - Explain the 5 Angas (DNA of Time).
-        - Bridge Ancient Panchanga with Modern Astrophysics for Grades 6-12.
-        - Tone: High-energy, precise, and visual.
+        1. "audio_summary": A high-energy, 3-4 sentence "voice-over" intro. Start with "Greetings, cosmic explorer!" or similar. Focus on the 'vibe' of the orbital mechanics today.
+        2. "insight": The full technical Markdown report following the hierarchical structure below.
+
+        Markdown Report Hierarchy (Mandatory Phases):
+
+        Phase I: The Universal Clock (General Concepts)
+        - Define "What is a Calendar?". Explain it as an engineering solution to synchronize Day/Month/Year rhythms.
+        - The Solar Engine (Western): Explain how it follows Earth's orbit (seasons).
+        - The Lunar-Solar Fusion (Panchanga): Explain how it synchronizes both Sun and Moon using the background stars (Sidereal).
+        - **The Birthday Drift**: Explain why a "Panchanga Birthday" (based on Tithi/Nakshatra) moves relative to the Western calendar. Mention the ~11 day lunar-solar gap and how **Adhika Masa** (Leap Month) acts as a cosmic synchronization tool.
+        - **The Great Drift**: Explain Axial Precession (Earth's wobble) and why Sidereal signs differ from Tropical ones. Use [[RENDER:ZODIAC_COMPARISON]].
+
+        Phase II: The Library of Atoms (Terminology)
+        Provide detailed physics/geometric deconstructions for:
+        - **Samvatsara**: Explain as the 60-year Jupiter-Saturn resonance/alignment cycle.
+        - **Masa**: Explain how it's named based on the Sun's transit sign during the New Moon.
+        - **Nakshatra**: 13°20' sectors used as a "Lunar Speedometer" to track the Moon's 27.3-day orbit. Use [[RENDER:CONSTELLATION_MAP]].
+        - **Tithi**: Defined strictly as Every 12° of angular separation between Sun and Moon. Use [[RENDER:MOON_PHASE_3D]].
+        - **Yoga**: Combined longitudinal momentum (Sum of longitudes).
+        - **Karana**: High-precision Half-Tithi (6° intervals).
+        - **Rahu & Ketu**: Explain as **Lunar Nodes** (intersection points of orbital planes). Use [[RENDER:PRECESSION_WOBBLE]].
+
+        Phase III: Decoding Your Specific Cosmic Alignment
+        - Create a specific section: `## 🧩 Decoding Your Specific Cosmic Alignment`.
+        - Use the specific values from the Input Data (Samvatsara: {config_data.get('samvatsara')}, Masa: {config_data.get('masa')}, etc.) to explain THIS specific moment.
+        - Tell the student what they would see if they looked at the sky right now (e.g., "The Moon is 84° away from the Sun, look for a Half-Moon!").
+
+        Tone: "Cool Science YouTuber" - high energy, fascinating, and precise.
         """
         try:
             print("DEBUG: Generating content via Gemini...", file=sys.stderr)
             response = self.model.generate_content(prompt)
-            print("DEBUG: Raw Gemini Response:", response.text, file=sys.stderr)
-            
-            # V6.0 Fix: Sanitize and Parse JSON
-            raw_text = response.text.replace('```json', '').replace('```', '').strip()
-            
-            # Default fallback if parsing fails
-            final_insight = raw_text
-            audio_summary = "Welcome to your cosmic dashboard."
-            
-            try:
-                import json
-                data = json.loads(raw_text)
-                final_insight = data.get("insight", raw_text)
-                audio_summary = data.get("audio_summary", audio_summary)
-                # Store the audio summary so it can be retrieved by the TTS endpoint
-                self.last_audio_summary = audio_summary 
-            except json.JSONDecodeError as je:
-                print(f"DEBUG: JSON Parse Warning: {je}. Using raw text.", file=sys.stderr)
-                # Fallback: If it's not valid JSON, it's widely likely just the text insight
-                final_insight = raw_text
-
-            return final_insight
-            
+            print("DEBUG: Gemini response received.", file=sys.stderr)
+            return response.text
         except Exception as e:
             print(f"ERROR in generate_insight: {str(e)}", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
-            return f"**Cosmic Connection Error**: {str(e)}.\n\nPlease check your API Key configuration."
+            return f"Error: {str(e)}"
 
     def chat_with_tutor(self, message, context_data):
         if not self.model:
@@ -144,24 +94,26 @@ class GeminiEngine(BaseAIEngine):
             
         system_prompt = f"""
         Role: The "Astro-Tutor" (The Maestro of the Cosmic Explorer).
-        Person: You are an encouraging, highly knowledgeable astronomer who bridges Ancient Indian Panchanga with Modern Astrophysics.
-        Tone: Enthusiastic, clear, and educational.
+        Person: You are an encouraging, highly enthusiastic, and knowledgeable Science Educator who bridges Traditional Indian Panchanga with Modern Astrophysics.
+        Tone: High-energy, clear, and educational.
+        
+        Strict Constraint: DO NOT use the term "Vedic". DO NOT mention or associate any concept with Astrology, Horoscopes, Numerology, or Superstition.
         
         The Scope: You ONLY answer questions about:
-        1. Hindu Panchanga (Tithis, Nakshatras, Angas).
-        2. Modern Astronomy (Planets, Orbits, Physics, Precession).
-        3. Cross-cultural calendars (Mayan, Inca, Egyptian, Gregorian).
+        1. Panchanga (Tithis, Nakshatras, Angas, Adhika Masa).
+        2. Modern Astronomy (Planets, Orbits, Physics, Precession, Resonances).
+        3. History of Calendars and Earth's Axial Wobble.
         4. The "Cosmic Explorer" app features.
         
-        Diversion Rule: If the student asks about unrelated topics (politics, sports, general recipes, celebrities), politely redirect them: "That's a fascinating question, but as your Astro-Tutor, my eyes are fixed on the heavens! Let's get back to [Panchanga/Astronomy topic]."
+        Diversion Rule: If the student asks about unrelated topics or superstition, politely redirect: "That's a fascinating question, but my eyes are fixed on the physics of the heavens! Let's get back to [Panchanga/Astronomy topic]."
         
-        Historical Strategy: Whenever explaining a challenge in timekeeping (like leap years or lunar cycles), mention how other civilizations solved it (e.g., Mayan Haab', Egyptian solar alignments, or Inca celestial pillars).
+        Educational Strategy: 
+        - Explain concepts like Samvatsara through Jupiter/Saturn resonances.
+        - Explain Tithi through Sun-Moon angular geometry.
+        - Use "Cool Science YouTuber" analogies.
         
-        Current Context for this User:
-        - Location: {context_data.get('address')}
-        - Samvatsara: {context_data.get('samvatsara')}
-        - Tithi: {context_data.get('tithi')}
-        - Nakshatra: {context_data.get('nakshatra')}
+        Current Context for this User (The Cosmic Map):
+        {context_data}
         
         User Message: {message}
         """

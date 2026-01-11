@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =================================================================
-# Hindu Panchanga V5.6 - Oracle Linux 9 Fresh Install Orchestrator
+# Hindu Panchanga V6.0 - Oracle Linux 9 Fresh Install Orchestrator
 # =================================================================
 
 # Exit on any error
@@ -9,10 +9,10 @@ set -e
 
 REPO_URL="https://github.com/nanjunda/gregorian_to_hindu_calendar.git"
 INSTALL_BASE="/tmp"
-INSTALL_DIR="$INSTALL_BASE/panchanga_nuclear_v5.6"
+INSTALL_DIR="$INSTALL_BASE/panchanga_masterclass_v6.0"
 APP_NAME="gregorian_to_hindu_calendar"
-# Allow branch override, default to current feature branch for testing
-BRANCH=${1:-"feature/v6.0-mobile-first"}
+# Allow branch override, default to main
+BRANCH=${1:-"main"}
 
 echo "🌌 Starting Fresh Installation of Hindu Panchanga..."
 echo "🌿 Target Branch: $BRANCH"
@@ -71,8 +71,9 @@ fi
 echo "🚢 Handing off to deploy.sh..."
 sudo GOOGLE_API_KEY="$GOOGLE_API_KEY" bash ./deploy.sh
 
+
 echo "================================================================="
-echo "✅ SUCCESS! Hindu Panchanga Masterclass V5.4 is now installed."
-echo "🌍 Check your Public IP on port 58921."
+echo "✅ SUCCESS! Hindu Panchanga Scientific Masterclass V6.0 is now installed."
+echo "🌍 Access at: https://$PUBLIC_IP:58921"
 echo "📘 The Student Guide is linked in the footer."
 echo "================================================================="

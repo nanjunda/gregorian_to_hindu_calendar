@@ -56,8 +56,8 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         pos = astrometric.frame_xyz(ecliptic_frame).au
         positions[name] = (pos[0], pos[1]) # X, Y coordinates
 
-    # Vedic/Approximated names map
-    vedic_names = {
+    # Traditional/Approximated names map
+    traditional_names = {
         "Mercury": "BUDHA (MERCURY)",
         "Venus": "SHUKRA (VENUS)",
         "Earth": "PRITHVI (EARTH)",
@@ -137,7 +137,7 @@ def generate_solar_system(utc_dt, output_path, event_title=None):
         # Planet Name
         ha = 'left' if sx >= 0 else 'right'
         offset = 0.5 if sx >= 0 else -0.5
-        v_name = vedic_names.get(name, name.upper())
+        v_name = traditional_names.get(name, name.upper())
         ax.text(sx + offset, sy, v_name, color=colors[name], 
                 ha=ha, va='center', fontsize=14, fontweight='bold', zorder=15, alpha=opacity)
 

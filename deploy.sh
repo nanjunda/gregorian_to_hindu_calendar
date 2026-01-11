@@ -3,7 +3,7 @@
 # Exit on any error
 set -e
 
-echo "🚀 Starting Hindu Panchanga v5.6 Deployment (Nuclear Fresh Install)..."
+echo "🚀 Starting Hindu Panchanga v6.0 Deployment (Scientific Masterclass)..."
 echo "ℹ️  Mode: Nginx Reverse Proxy (Port 5080) -> Gunicorn"
 echo "⚠️  RELOCATING App to /opt/panchanga for SELinux stability"
 
@@ -52,9 +52,15 @@ if [ "$PKG_MGR" == "dnf" ]; then
     echo "🛡️ Whitelisting port 8000 for backend..."
     sudo semanage port -m -t http_port_t -p tcp 8000 || sudo semanage port -a -t http_port_t -p tcp 8000 || true
 else
-    sudo apt-get update -y
-    sudo apt-get install -y python3-pip python3-venv nginx git curl rsync
+    sudo apt-get install -y python3-pip python3-venv nginx git curl rsync openssl
 fi
+
+# 1.5 Generate Self-Signed SSL Certificate (required for Nginx)
+echo "🔐 Generating Self-Signed SSL Certificate..."
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/panchanga-selfsigned.key \
+    -out /etc/ssl/certs/panchanga-selfsigned.crt \
+    -subj "/C=IN/ST=Karnataka/L=Bangalore/O=AstroTutor/OU=Education/CN=panchanga.local"
 
 # 2. Relocate Application to /opt
 echo "🚚 Moving application to $DEPLOY_DIR..."

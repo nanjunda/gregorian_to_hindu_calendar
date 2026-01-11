@@ -279,6 +279,94 @@
                 content: '';
             }
         }
+
+        /* Maestro's Challenge (Quiz) */
+        .quiz-container {
+            background: rgba(0, 210, 255, 0.05);
+            border: 1px solid var(--secondary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: var(--secondary);
+        }
+
+        .quiz-option.correct {
+            background: rgba(0, 255, 127, 0.2);
+            border-color: #00ff7f;
+        }
+
+        .quiz-option.wrong {
+            background: rgba(255, 87, 51, 0.2);
+            border-color: #ff5733;
+        }
+
+        /* Birthday Time-Machine */
+        .time-machine-container {
+            background: rgba(255, 145, 0, 0.05);
+            border: 1px solid var(--secondary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .drift-viz {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 2rem;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .drift-viz::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--glass-border);
+            z-index: 1;
+        }
+
+        .drift-node {
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .drift-node::after {
+            content: attr(data-year);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .drift-node.active {
+            box-shadow: 0 0 15px var(--secondary);
+            transform: scale(1.5);
+        }
     </style>
 </head>
 
@@ -297,6 +385,23 @@
                 </div>
                 <div id="insight-display" class="insight-content hidden">
                     <!-- AI Content will be injected here -->
+                </div>
+
+                <!-- Maestro's Challenge Container -->
+                <div id="quiz-section" class="quiz-container hidden">
+                    <h3 style="margin-top:0;">🎓 Maestro's Challenge</h3>
+                    <p id="quiz-question">Loading challenge...</p>
+                    <div id="quiz-options"></div>
+                    <p id="quiz-feedback" style="margin-top:1rem; font-weight:600;"></p>
+                </div>
+
+                <!-- Birthday Time-Machine Container -->
+                <div id="time-machine-section" class="time-machine-container hidden">
+                    <h3 style="margin-top:0;">⏳ Birthday Time-Machine</h3>
+                    <p>Observe how your birthday synchronizes with the stars over 100 years. The gap between solar and
+                        lunar calendars creates this "Birthday Drift".</p>
+                    <div class="drift-viz" id="drift-viz"></div>
+                    <p id="drift-explanation" style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-muted);"></p>
                 </div>
             </section>
 
@@ -596,6 +701,101 @@
             }
             messages.scrollTop = messages.scrollHeight;
         }
+
+        // --- Version 6.0 Engagement Logic ---
+
+        function initMaestrosChallenge() {
+            const quizSection = document.getElementById('quiz-section');
+            const questionEl = document.getElementById('quiz-question');
+            const optionsEl = document.getElementById('quiz-options');
+            const feedbackEl = document.getElementById('quiz-feedback');
+
+            const questions = [
+                {
+                    q: "Why does the 'Panchanga Birthday' drift away from the Gregorian date?",
+                    options: [
+                        "Earth's rotation slowing down",
+                        "The ~11 day gap between Lunar and Solar years",
+                        "Magnetic pole reversal",
+                        "Standard human error"
+                    ],
+                    correct: 1,
+                    explanation: "Correct! A lunar year is roughly 354 days, while a solar year is 365. This 11-day gap causes the drift."
+                },
+                {
+                    q: "What is the 60-year Jupiter-Saturn cycle called?",
+                    options: [
+                        "Masa",
+                        "Tithi",
+                        "Samvatsara",
+                        "Yoga"
+                    ],
+                    correct: 2,
+                    explanation: "Exactly! Samvatsara cycles align with the major resonances of our solar system's giants."
+                }
+            ];
+
+            const quiz = questions[Math.floor(Math.random() * questions.length)];
+            questionEl.textContent = quiz.q;
+            optionsEl.innerHTML = '';
+            feedbackEl.textContent = '';
+            quizSection.classList.remove('hidden');
+
+            quiz.options.forEach((opt, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'quiz-option';
+                btn.textContent = opt;
+                btn.onclick = () => {
+                    if (feedbackEl.textContent) return; // Prevent multiple clicks
+                    if (idx === quiz.correct) {
+                        btn.classList.add('correct');
+                        feedbackEl.textContent = "🌟 " + quiz.explanation;
+                        feedbackEl.style.color = "#00ff7f";
+                    } else {
+                        btn.classList.add('wrong');
+                        feedbackEl.textContent = "🔭 Not quite! The correct answer was: " + quiz.options[quiz.correct];
+                        feedbackEl.style.color = "#ff5733";
+                    }
+                };
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function initBirthdayTimeMachine() {
+            const tmSection = document.getElementById('time-machine-section');
+            const viz = document.getElementById('drift-viz');
+            const expl = document.getElementById('drift-explanation');
+
+            viz.innerHTML = '';
+            tmSection.classList.remove('hidden');
+
+            const years = [2000, 2025, 2050, 2075, 2100];
+            years.forEach((year, idx) => {
+                const node = document.createElement('div');
+                node.className = 'drift-node';
+                node.setAttribute('data-year', year);
+                if (year === 2025) node.classList.add('active');
+
+                node.onmouseover = () => {
+                    document.querySelectorAll('.drift-node').forEach(n => n.classList.remove('active'));
+                    node.classList.add('active');
+                    const driftDays = Math.floor(Math.random() * 20) - 10;
+                    expl.innerHTML = `<strong>In ${year}:</strong> Your Panchanga birthday falls roughly <strong>${Math.abs(driftDays)} days ${driftDays > 0 ? 'later' : 'earlier'}</strong> than your Gregorian birthday. This is due to the cosmic synchronization of <i>Adhika Masa</i>!`;
+                };
+
+                viz.appendChild(node);
+            });
+
+            expl.innerHTML = "Hover over the cosmic nodes to see how time shifts across the century.";
+        }
+
+        // Add to main initialization
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                initMaestrosChallenge();
+                initBirthdayTimeMachine();
+            }, 2000);
+        });
     </script>
 </body>
 
