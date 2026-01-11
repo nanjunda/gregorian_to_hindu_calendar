@@ -11,8 +11,8 @@ REPO_URL="https://github.com/nanjunda/gregorian_to_hindu_calendar.git"
 INSTALL_BASE="/tmp"
 INSTALL_DIR="$INSTALL_BASE/panchanga_masterclass_v6.0"
 APP_NAME="gregorian_to_hindu_calendar"
-# Allow branch override, default to main
-BRANCH=${1:-"main"}
+# Allow branch override, default to current feature branch
+BRANCH=${1:-"feature/v6.0-mobile-first"}
 
 echo "🌌 Starting Fresh Installation of Hindu Panchanga..."
 echo "🌿 Target Branch: $BRANCH"
