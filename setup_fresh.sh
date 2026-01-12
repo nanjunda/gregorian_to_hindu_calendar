@@ -12,7 +12,7 @@ INSTALL_BASE="/tmp"
 INSTALL_DIR="$INSTALL_BASE/panchanga_masterclass_v6.0"
 APP_NAME="gregorian_to_hindu_calendar"
 # Allow branch override, default to current feature branch
-BRANCH=${1:-"feature/v6.0-mobile-first"}
+BRANCH=${1:-"feature/v6.0.2"}
 
 echo "🌌 Starting Fresh Installation of Hindu Panchanga..."
 echo "🌿 Target Branch: $BRANCH"
