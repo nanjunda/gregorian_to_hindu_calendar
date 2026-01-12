@@ -518,7 +518,7 @@
         </div>
 
         <footer>
-            <p>&copy; 2025 Hindu Panchanga Engine | AI Powered Insights</p>
+            <p>&copy; 2026 Hindu Panchanga Engine | AI Powered Insights</p>
         </footer>
     </div>
 
@@ -595,7 +595,7 @@
                 }
                 const glossary = {
                     'epoch': { def: 'A fixed point in time used as a reference point.', target: null },
-                    'jovian': { def: 'Relating to Jupiter. The 60-year Samvatsara cycle follows Jupiter\'s path.', target: null },
+                    'jovian': { def: 'Relating to Jupiter. The 60-year Samvatsara cycle follows Jupiter\'s path.', target: 'SAMVATSARA_RESONANCE' },
                     'precession': { def: 'The slow conical wobble of Earth\'s axis (25,800 year cycle).', target: 'PRECESSION_WOBBLE' },
                     'sidereal': { def: 'Measured relative to fixed stars (Hindu system).', target: 'ZODIAC_COMPARISON' },
                     'ayanamsha': { def: 'The angular drift (24°) between seasons and stars.', target: 'ZODIAC_COMPARISON' },
@@ -697,7 +697,8 @@
                 'ZODIAC_COMPARISON': 'visual-zodiac',
                 'MOON_PHASE_3D': 'visual-moon',
                 'PRECESSION_WOBBLE': 'visual-precession',
-                'CONSTELLATION_MAP': 'visual-constellations'
+                'CONSTELLATION_MAP': 'visual-constellations',
+                'SAMVATSARA_RESONANCE': 'visual-samvatsara'
             };
 
             const elementId = renderTags[tagId];
