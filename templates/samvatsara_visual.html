@@ -10,108 +10,160 @@
             margin: 0;
             overflow: hidden;
             background: #000;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
-        #info {
+        #ui {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 20px;
+            left: 20px;
             color: white;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            max-width: 180px;
-            z-index: 100;
-            border: 1px solid rgba(255, 145, 0, 0.3);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.85);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            width: 240px;
+            z-index: 1000;
+            border: 1px solid rgba(255, 145, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
-        #info h3 {
-            margin: 0 0 10px 0;
+        #ui.minimized {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 145, 0, 0.15);
+            border: 1px solid rgba(255, 145, 0, 0.4);
+        }
+
+        #ui.minimized .content-box {
+            display: none;
+        }
+
+        #ui h3 {
+            margin: 0 0 5px 0;
             color: #ff9100;
+            font-size: 0.9rem;
         }
 
         .legend-item {
-            margin: 5px 0;
+            margin: 3px 0;
             display: flex;
             align-items: center;
+            font-size: 0.7rem;
         }
 
         .color-box {
-            width: 30px;
-            height: 15px;
-            margin-right: 10px;
-            border-radius: 4px;
+            width: 20px;
+            height: 10px;
+            margin-right: 8px;
+            border-radius: 2px;
         }
 
-        #controls {
+        .toggle-btn {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: white;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            color: #ff9100;
+            font-size: 1.1rem;
+            font-weight: bold;
+            user-select: none;
+            z-index: 1001;
+        }
+
+        #ui.minimized .toggle-btn {
+            position: static;
+            font-size: 1.3rem;
         }
 
         .resonance-stat {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
             text-align: center;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
             border-radius: 8px;
-            border: 1px solid #4fc3f7;
+            border: 1px solid rgba(79, 195, 247, 0.3);
             color: #4fc3f7;
-            font-size: 10px;
+            font-size: 0.65rem;
+            backdrop-filter: blur(5px);
         }
 
         .resonance-stat .big {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
+            display: block;
+        }
+
+        #controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.65rem;
+            pointer-events: none;
         }
     </style>
 </head>
 
 <body>
-    <div id="info">
-        <h3>Samvatsara: Planetary Resonance</h3>
-        <p style="font-size: 0.8rem; color: #b0b0b0; margin-bottom: 12px;">Archaeoastronomy Module v6.0</p>
+    <div id="ui" class="minimized">
+        <div class="toggle-btn" onclick="toggleUI()">+</div>
+        <div class="content-box">
+            <h3>Samvatsara: Resonance</h3>
+            <p style="font-size: 0.65rem; color: #888; margin-bottom: 8px;">Archaeoastronomy Module v6.0</p>
 
-        <div class="legend-item">
-            <div class="color-box" style="background: #ffcc80;"></div>
-            <span><strong>Jupiter</strong> (~11.86y orbit)</span>
-        </div>
-        <div class="legend-item">
-            <div class="color-box" style="background: #ce93d8;"></div>
-            <span><strong>Saturn</strong> (~29.46y orbit)</span>
-        </div>
+            <div class="legend-item">
+                <div class="color-box" style="background: #ffcc80;"></div>
+                <span><strong>Jupiter</strong> (~11.86y orbit)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background: #ce93d8;"></div>
+                <span><strong>Saturn</strong> (~29.46y orbit)</span>
+            </div>
 
-        <div
-            style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; line-height: 1.3;">
-            <strong style="color: #ff9100;">The Science of 60 Years:</strong><br>
-            Every 60 years, Jupiter completes 5 orbits as Saturn completes 2. This resonance resets their relative
-            positions!
+            <div
+                style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.7rem; line-height: 1.3; color: #ccc;">
+                <strong style="color: #ff9100;">The 60-Year Reset:</strong><br>
+                Jupiter completes 5 orbits as Saturn completes 2. This resonance is the geometric basis of the
+                Samvatsara cycle!
+            </div>
         </div>
     </div>
 
     <div class="resonance-stat">
-        <div class="big">5 : 2</div>
-        <div>Orbital Resonance</div>
+        <span class="big">5 : 2</span>
+        Resonance Ratio
     </div>
 
-    <div id="controls">
-        Drag to Orbit • Scroll to Zoom<br>
-        <small>Watch them align at the markers!</small>
+    <div id="controls-hint">
+        Drag to Orbit • Scroll to Zoom
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // UI Toggle Function
+        function toggleUI() {
+            const ui = document.getElementById('ui');
+            const toggleBtn = ui.querySelector('.toggle-btn');
+            if (ui.classList.contains('minimized')) {
+                ui.classList.remove('minimized');
+                toggleBtn.textContent = '−';
+            } else {
+                ui.classList.add('minimized');
+                toggleBtn.textContent = '+';
+            }
+        }
+
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 5000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });

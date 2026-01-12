@@ -11,49 +11,121 @@
             overflow: hidden;
             background: #0b0e14;
             color: #fff;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
         #ui {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
+            top: 20px;
+            left: 20px;
+            background: rgba(13, 17, 23, 0.9);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            width: 200px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
 
-        .stat {
-            font-size: 1.2rem;
+        #ui.minimized {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 204, 0, 0.15);
+            border: 1px solid rgba(255, 204, 0, 0.4);
+        }
+
+        #ui.minimized .content-box {
+            display: none;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            color: #ffcc00;
+            font-size: 1.1rem;
+            font-weight: bold;
+            user-select: none;
+            z-index: 1001;
+        }
+
+        #ui.minimized .toggle-btn {
+            position: static;
+            font-size: 1.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
             font-weight: 700;
             color: #ffcc00;
-            margin: 5px 0;
+            margin-bottom: 5px;
         }
 
-        #controls {
+        #tithi-display {
+            font-size: 0.8rem;
+            color: #00d2ff;
+            font-weight: 600;
+        }
+
+        #controls-hint {
             position: absolute;
             bottom: 20px;
             width: 100%;
             text-align: center;
-            color: #888;
-            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.65rem;
             pointer-events: none;
         }
     </style>
 </head>
 
 <body>
-    <div id="ui">
-        <div style="font-size: 0.8rem; color: #aaa;">TITHI GEOMETRY</div>
-        <div id="angle-display" class="stat">Angle: 0°</div>
-        <div id="tithi-display" style="color: #00d2ff;">Phase: New Moon</div>
+    <div id="ui" class="minimized">
+        <div class="toggle-btn" onclick="toggleUI()">+</div>
+        <div class="content-box">
+            <div class="stat-label">TITHI GEOMETRY</div>
+            <div id="angle-display" class="stat-value">Angle: 0°</div>
+            <div id="tithi-display">Phase: New Moon</div>
+            <p style="font-size: 0.65rem; color: #777; margin-top: 8px; line-height: 1.3;">Drag the Moon to see how the
+                Sun-Moon angle defines the Vedic Tithi.</p>
+        </div>
     </div>
 
-    <div id="controls">Drag the Moon around the Earth to change the Tithi</div>
+    <div id="controls-hint">
+        Drag the Moon around the Earth
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        // UI Toggle Function
+        function toggleUI() {
+            const ui = document.getElementById('ui');
+            const toggleBtn = ui.querySelector('.toggle-btn');
+            if (ui.classList.contains('minimized')) {
+                ui.classList.remove('minimized');
+                toggleBtn.textContent = '−';
+            } else {
+                ui.classList.add('minimized');
+                toggleBtn.textContent = '+';
+            }
+        }
+
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.position.set(0, 400, 600);
