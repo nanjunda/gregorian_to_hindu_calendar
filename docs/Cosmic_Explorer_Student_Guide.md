@@ -1,61 +1,47 @@
-# 🚀 COSMIC MASTERCLASS: Your Guide to the Sky
+# 🚀 COSMIC MASTERCLASS: The Scientific Student Guide (v6.0.1)
 
-> [!TIP]
-> **Premium Interactive Version Available!**
-> For high-resolution 3D interactive models, pulsing glossary, and audio narration by the Maestro, please visit the **[Interactive Student Guide](http://localhost:5080/guide)**.
+> [!IMPORTANT]
+> **Archaeoastronomy Simulation Access**
+> This platform uses NASA JPL ephemeris data to reconstruct the ancient sky. Use the **[Interactive Insights]** link after your conversion to launch the 3D simulators.
 
-## Welcome, Time Traveler!
-Most of us know our "Star Sign," but that's just a tiny piece of the puzzle. The sky is a giant clock, and for thousands of years, civilizations mastered reading it without electronics. This guide introduces you to the **Hindu Panchanga**, a digital time machine that uses NASA data to reconstruct the ancient sky.
+## 1. The Two Maps of Time
+History is written in the stars, but humanity uses two different "maps" to read it:
+- **Tropical Map (Modern/Seasonal)**: Focuses on the Earth's relationship with the Sun. It defines Spring by the Equinox. It is a "Fixed Season" calendar.
+- **Sidereal Map (Traditional/Panchanga)**: Focuses on the Earth's relationship with the **Galaxy**. It defines the year by when we return to the exact same stars. 
 
----
+## 2. The Great Drift (Axial Precession)
+Earth wobbles like a slowing top over a 25,800-year cycle.
+- **The Gap**: Because of this wobble, the "stars" and the "seasons" slowly move apart.
+- **Zodiac Aligner**: Use this 3D module to see the 24° gap (Ayanamsa) between the Tropical and Sidereal zodiacs. You can **Zoom** and **Rotate** to inspect how your Western sign usually differs from your Hindu Rashi.
 
-## 1. The Two Clocks of Earth
-Every culture has a "Map of Time." 
-- **Western Calendar (Solar)**: Tuned to the **Seasons**. It stays aligned with the Sun's journey from Spring to Spring.
-- **Hindu Panchanga (Luni-Solar-Sidereal)**: Tuned to the **Stars**. It tracks where planets *actually* are in the galaxy, not just which season it is.
+## 3. The Birthday Time-Machine (v6.0.1)
+Why does your birthday change every year? 
+- **The 11-Day Gap**: A Lunar year is roughly 11 days shorter than a Solar year. 
+- **Timeline Scrubber**: Use the interactive slider (1950-2100) to trace your birthday's drift across the century.
+- **Adhika Masa (Leap Month)**: Watch the **Synchronization Meter**. Every ~3 years, the system adds a leap month to "reset" the calendar, ensuring your birthday never drifts into the wrong season!
 
-## 2. The 5 Limbs (Angas)
-"Panchanga" means five limbs. Every moment has:
-1.  **Vara**: The Weekday.
-2.  **Tithi**: Lunar Day (based on the Sun-Moon angle).
-3.  **Nakshatra**: The Moon's star mansion (27 sub-divisions).
-4.  **Yoga**: The mathematical sum of solar and lunar longitudes.
-5.  **Karana**: Half of a Tithi (the active interval).
+## 4. Planetary Resonance: The 60-Year Clock
+The **Samvatsara** cycle isn't a random list of names; it's a "Great Conjunction."
+- **Jupiter (~11.8y)** vs **Saturn (~29.4y)**.
+- **5 : 2 Ratio**: Every 60 years, Jupiter completes 5 orbits while Saturn completes 2. They meet at the same point in space, resetting the "60-Year Samvatsara" clock. Use the 3D resonance module to watch this cosmic meeting!
 
-## 3. The Cosmic Stadium (Zodiac)
-Imagine the planets as runners on a field. The Zodiac signs are giant billboards on the stadium wall. 
-- **Rashi**: The 12 zones of the sky (Aries/Mesha, etc.).
-- **Interactive**: In the digital guide, you can rotate the 3D stadium to see how Earth views these "billboards."
+## 5. The Geometry of a "Tithi"
+A "Lunar Day" (Tithi) is not a 24-hour clock—it's an **angle**.
+- Every **12°** of separation between the Sun and Moon creates one Tithi.
+- Use the **Tithi Phase Protractor** to see why a lunar day can be longer or shorter than a standard 24-hour day.
 
-## 4. The Great Wobble (Precession)
-Earth spins like a slowing top. It won't point to the same North Star forever! 
-- **Precession**: A 25,800-year cycle.
-- **Ayanamsha**: The 24-degree drift between the stars and our seasons caused by this wobble. This is why your "Western" sign is usually different from your "Hindu" sign.
-
-## 5. The Shadow Planets (Rahu & Ketu)
-They aren't physical rocks, but **mathematical danger zones**.
-- **Lunar Nodes**: Points where the Moon's tilted orbit cuts through the Earth's path.
-- **Rahu**: The North crossing.
-- **Ketu**: The South crossing.
-- **Eclipses**: ONLY happen when the Sun and Moon meet at these specific points.
-
-## 6. The Celestial Race
-Why is Saturn "slow"?
-- **The Moon**: Finishes a lap in 27 days.
-- **Jupiter**: Finishes a lap in 12 years.
-- **Saturn**: Finishes a lap in 30 years!
-Planets in the outer lanes simply have much more ground to cover.
-
-## 7. The Sun's Swing (Uttarayana/Dakshinayana)
-The Sun doesn't stay in the same place. It swings North for 6 months and South for 6 months. This "swing" is what creates our seasons and changes the length of our days.
-
-## 8. Retrograde: The Optical Illusion
-Planets **never** actually move backward. It's an illusion that happens when Earth (in a faster orbit) passes a slower planet, making it *look* like it's looping backward against the stars.
+## 6. The Shadow Points (Rahu & Ketu)
+Rahu and Ketu are not planets; they are the **Lunar Nodes**.
+- These are the specific mathematical points where the Moon's tilted orbit crosses the Earth's path. 
+- In the 3D **Lunar Nodes Simulator**, you can see why Eclipses only happen when the Moon hits these specific "high-traffic" zones.
 
 ---
 
-## 🔐 Privacy & Precision
-- **NASA JPL Data**: We use the same math NASA uses for satellite launches.
-- **Stealth Mode**: No data is saved. No database exists. Your cosmic details vanish the moment you close the tab.
+## 🎓 The Maestro's Challenge
+At the bottom of your Insights report, look for the **Maestro's Challenge**. It's a real-time assessment to see if you've mastered the archaeoastronomy of the current day!
 
-**Welcome to the true sky.**
+## 🔐 Data Integrity
+- **NASA JPL Engine**: Calculations are done using high-precision orbital vectors.
+- **Privacy First**: No personal data or conversion history is stored. Your sessions are ephemeral and secure.
+
+**Welcome to the science of the stars.**
