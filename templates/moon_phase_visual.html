@@ -111,10 +111,25 @@
         Drag the Moon around the Earth
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        // UI Toggle Function
-        function toggleUI() {
+    <div id="controls-hint">
+        Drag the Moon around the Earth
+    </div>
+
+    <!-- FIX: Import Map for Three.js v0.160.0 & ES Module Shims (Robust Loading) -->
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // UI Toggle Function (Global Scope for HTML onclick)
+        window.toggleUI = function () {
             const ui = document.getElementById('ui');
             const toggleBtn = ui.querySelector('.toggle-btn');
             if (ui.classList.contains('minimized')) {
@@ -133,6 +148,7 @@
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio); // Sharpness on Retina screens
         document.body.appendChild(renderer.domElement);
 
         const sunLight = new THREE.DirectionalLight(0xffffff, 2);
@@ -175,22 +191,38 @@
 
             const tithiIdx = Math.floor(deg / 12);
             const paksha = deg < 180 ? "Shukla (Waxing)" : "Krishna (Waning)";
-            const name = tithiNames[tithiIdx % 15];
+            // Handle edge case for 30th element (Amavasya)
+            const safeIdx = tithiIdx % 15;
+            const name = tithiNames[safeIdx] || "Prathama";
 
             tithiDisp.innerText = `${paksha} ${name}`;
         }
 
-        window.addEventListener('mousedown', () => isDragging = true);
-        window.addEventListener('mouseup', () => isDragging = false);
-        window.addEventListener('mousemove', (e) => {
+        // Modern Pointer Events (Mouse + Touch + Pen)
+        document.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            // Prevent default touch scrolling if dragging on canvas
+            if (e.target === renderer.domElement) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('pointerup', () => { isDragging = false; });
+
+        document.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
+            e.preventDefault(); // Stop scrolling while dragging
+
+            // Normalize coordinates (-1 to +1)
             const x = (e.clientX / window.innerWidth) * 2 - 1;
             const y = -(e.clientY / window.innerHeight) * 2 + 1;
+
             const angle = Math.atan2(y, x);
-            moonOrbit.rotation.y = angle; // Align rotation with mouse angle
+            moonOrbit.rotation.y = angle; // Align rotation with pointer angle
             updateStats(angle);
         });
 
+        // Loop
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
