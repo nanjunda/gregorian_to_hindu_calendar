@@ -9,7 +9,7 @@ from utils.location import get_location_details
 from panchanga.calculations import (
     calculate_vara, calculate_tithi, calculate_nakshatra, 
     calculate_yoga, calculate_karana, calculate_masa_samvatsara,
-    format_panchanga_report
+    calculate_saka_year, format_panchanga_report
 )
 from utils.astronomy import get_sidereal_longitude, get_sunrise_sunset, sun, moon, get_previous_new_moon, get_angular_data
 import os
@@ -270,6 +270,7 @@ def get_panchanga():
                 "sunrise": sunrise.strftime('%H:%M:%S') if sunrise else 'N/A',
                 "sunset": sunset.strftime('%H:%M:%S') if sunset else 'N/A',
                 "samvatsara": samvatsara,
+                "saka_year": calculate_saka_year(local_dt),
                 "masa": masa,
                 "paksha": paksha,
                 "tithi": tithi,

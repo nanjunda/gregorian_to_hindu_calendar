@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('res-location').textContent = `${data.address} (${data.timezone})`;
 
         document.getElementById('res-samvatsara').textContent = data.samvatsara;
+        document.getElementById('res-saka-year').textContent = data.saka_year;
         document.getElementById('res-masa').textContent = data.masa;
         document.getElementById('res-paksha').textContent = data.paksha;
         document.getElementById('res-tithi').textContent = data.tithi;

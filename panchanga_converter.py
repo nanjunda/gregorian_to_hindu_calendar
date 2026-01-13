@@ -5,7 +5,8 @@ from utils.location import get_location_details
 from utils.astronomy import get_sidereal_longitude, get_sunrise_sunset, sun, moon
 from panchanga.calculations import (
     calculate_vara, calculate_tithi, calculate_nakshatra, 
-    calculate_yoga, calculate_karana, calculate_masa_samvatsara
+    calculate_yoga, calculate_karana, calculate_masa_samvatsara,
+    calculate_saka_year
 )
 
 def main():
@@ -55,6 +56,7 @@ def main():
         print(f"Sunset          : {sunset.strftime('%H:%M:%S') if sunset else 'N/A'}")
         print("-"*40)
         print(f"Samvatsara      : {samvatsara}")
+        print(f"Saka Varsha     : {calculate_saka_year(local_dt)} (Civil Era)")
         print(f"Masa (Month)    : {masa}")
         print(f"Paksha          : {paksha}")
         print(f"Tithi           : {tithi}")

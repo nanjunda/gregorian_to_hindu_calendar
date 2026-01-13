@@ -67,6 +67,25 @@ def calculate_masa_samvatsara(year, sun_lon_at_nm, sun_lon_now, lang='EN'):
     samvat_index = (year - 1987) % 60
     return masa_name, SAMVATSARAS[lang][samvat_index]
 
+def calculate_saka_year(date_obj):
+    """
+    Calculates the Saka Varsha (Saka Era) year.
+    The Saka Era started in 78 AD.
+    The New Year starts on March 22 (March 21 in leap years).
+    """
+    gregorian_year = date_obj.year
+    
+    # Determine cutoff date for the current year
+    # Leap year check: divisible by 4 but not 100, unless divisible by 400
+    is_leap = (gregorian_year % 4 == 0 and gregorian_year % 100 != 0) or (gregorian_year % 400 == 0)
+    cutoff_day = 21 if is_leap else 22
+    
+    # Compare current date with cutoff (March = month 3)
+    if date_obj.month > 3 or (date_obj.month == 3 and date_obj.day >= cutoff_day):
+        return gregorian_year - 78
+    else:
+        return gregorian_year - 79
+
 def format_panchanga_report(dt_local, loc_address, loc_timezone, sunrise, sunset, samvatsara, masa, paksha, tithi, vara, nakshatra, nak_pada, yoga, karana, lang='EN'):
     labels = REPORT_LABELS[lang]
     

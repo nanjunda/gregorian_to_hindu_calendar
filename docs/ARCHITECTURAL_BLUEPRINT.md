@@ -18,6 +18,8 @@ The application is organized into three distinct layers:
 *   **Source of Truth**: NASA JPL Ephemeris data processed via specialized physics libraries.
 *   **Logic**: Handled in `utils/panchanga.py` and `utils/skyshot.py`.
 *   **Security**: Oracle Linux 9 / OCI Hardened. SELinux-compliant and strictly stateless (no database).
+*   **API Schema (v6.1)**:
+    *   Returns JSON including `saka_year` (Civil Era) alongside `samvatsara`, `masa`, and `nakshatra` to support the "Dual-Clock" educational model.
 
 ### Layer 2: The Visualization Layer (Three.js)
 *   **Dynamics**: Individual 3D modules (Zodiac Aligner, Samvatsara Resonance) are built as standalone HTML/JS templates using Three.js.

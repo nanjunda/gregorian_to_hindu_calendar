@@ -60,6 +60,9 @@ class GeminiEngine(BaseAIEngine):
         Phase II: The Library of Atoms (Terminology)
         Provide detailed physics/geometric deconstructions for:
         - **Samvatsara**: Explain as the 60-year Jupiter-Saturn resonance/alignment cycle. Use [[RENDER:SAMVATSARA_RESONANCE]].
+        - **Saka Varsha (The Civil Era)**: Explain this as the **Official Indian Civil Calendar** (used by the Government).
+          *   **The Origin**: Started in 78 AD (King Shalivahana).
+          *   **The Difference**: It is a purely **Solar (Agricultural)** count, unlike the **Cosmic (Luni-Solar)** Samvatsara. Use the analogy of "Administrative Time" vs "Nature's Time".
         - **Masa: The Cosmic Month**: Explain the two ways to measure a month:
           1. **Saura Mana (The Solar Runner)**: The steady 30-day month defined by the Sun entering a new sign (e.g., Mesha).
           2. **Chandra Mana (The Lunar Sprinter)**: The fast 29.5-day month defined by the Moon's phases.

@@ -65,6 +65,24 @@ Need help navigating the simulation? Or want to know more about a specific star?
 
 ---
 
+## 10. The Official Calendar vs. The Sky Calendar
+The **"Saka Varsha"** (Saka Era) shown on the dashboard is the **Official Civil Calendar** of India. It is different from the **Samvatsara** (Sky Calendar) used for festivals.
+
+### The Two Clocks:
+1.  **Civil Time (Saka Era)**: 
+    *   **Purpose**: Administration (Taxes, Banking, Government Gazettes).
+    *   **Type**: Purely **Solar**. It ignores the Moon phases.
+    *   **Origin**: Started in **78 AD** (King Shalivahana's Era).
+    *   **Math**: It is exactly 78 years behind the Western Calendar (e.g., 2026 - 78 = 1948).
+2.  **Cosmic Time (Samvatsara)**:
+    *   **Purpose**: Agriculture and Nature (Tides, Seasons, Harvests).
+    *   **Type**: **Luni-Solar**. It weaves the Sun and Moon together.
+    *   **Origin**: The 60-year resonance of Jupiter and Saturn.
+
+*Think of Saka as the "Office Clock" and Samvatsara as the "Nature Clock."*
+
+---
+
 ## 🎓 The Maestro's Challenge
 At the bottom of your Insights report, look for the **Maestro's Challenge**. It's a real-time assessment to see if you've mastered the archaeoastronomy of the current day!
 
